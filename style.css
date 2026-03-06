@@ -1,0 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Playfair+Display:wght@700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'DM Mono', monospace;
+  background-color: #0e0e0f;
+  color: #e8e0d0;
+  height: 100vh;
+}
+
+
+header {
+  padding: 14px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #1e1e20;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding-bottom: 5px;
+}
+
+.logo-icon {
+  font-size: 30px;
+  color: #f0a04b;
+  margin-top: 5px;
+}
+
+.logo-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 30px;
+  font-weight: 700;
+  color: #e8e0d0;
+}
+
+.logo-version {
+  font-size: 13px;
+  color: #555;
+  margin-top: 14px;
+}
+
+.primary-btn {
+  background-color: rgb(240, 160, 75);
+  color: #0e0e0f;
+  border: none;
+  padding: 14px 20px;
+  border-radius: 7px;
+  font-family: 'DM Mono', monospace;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.5s ease font-weight 0.5s ease box-shadow 0.5s;
+}
+
+.primary-btn:hover {
+  /* background-color: #e8943a; */
+  transform: scale(1.02);
+  box-shadow: 0 0 15px rgba(215, 126, 31, 0.8);
+  font-weight: 550;
+
+}
+
+.primary-btn.small {
+  padding: 6px 12px;
+  font-size: 12px;
+  flex: 1;
+}
