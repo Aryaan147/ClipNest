@@ -1,23 +1,123 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClipNest</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text x='50%' y='50%' dominant-baseline='central' text-anchor='middle' font-size='80' fill='%23f0a04b' font-family='sans-serif' font-weight='900'>⌗</text></svg>">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ClipNest</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 </head>
-
 <body>
-    
-    <header>
-        <div class="logo">
-            <span class="logo-icon">⌗</span>
-            <span class="logo-name">ClipNest</span>
-            <span class="logo-version">v1.0</span>
+
+  <!-- top bar -->
+  <div class="header">
+    <div class="header-logo">
+      <span class="logo-icon">⌗</span>
+      <span class="logo-text">ClipNest</span>
+      <span class="logo-version">v1.0</span>
+    </div>
+    <button class="primary-btn" onclick="openNewModal()">+ New Clip</button>
+  </div>
+
+  <!-- main layout: sidebar + content -->
+  <div class="app-body">
+
+    <!-- left sidebar -->
+    <div class="sidebar">
+
+      <p class="sidebar-section-label">LIBRARY</p>
+
+      <div class="sidebar-folder active" id="folder-All" onclick="changeFolder('All')">
+        <span>All Clips</span>
+        <span class="folder-count" id="count-All">0</span>
+      </div>
+
+      <p class="sidebar-section-label" style="margin-top: 16px;">FOLDERS</p>
+
+      <!-- folders will be added here by js -->
+      <div id="folderList"></div>
+
+      <!-- add new folder button -->
+      <div class="add-folder-btn" id="addFolderBtn" onclick="showFolderInput()">+ New Folder</div>
+
+      <!-- input box to type new folder name (hidden by default) -->
+      <div class="folder-input-box hidden" id="folderInputBox">
+        <input type="text" id="folderNameInput" placeholder="Folder name..." />
+        <div class="folder-input-actions">
+          <button class="primary-btn small" onclick="addNewFolder()">Add</button>
+          <button class="ghost-btn small" onclick="hideFolderInput()">Cancel</button>
         </div>
-        <button class="primary-btn">+ New Clip</button>
-    </header>
-    
+      </div>
+
+    </div>
+
+    <!-- right content area -->
+    <div class="main">
+
+      <!-- search bar -->
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input type="text" class="search-input" id="searchInput" placeholder="Search clips..." oninput="searchClips()" />
+      </div>
+
+      <!-- heading -->
+      <div class="section-header">
+        <h2 class="section-title" id="sectionTitle">All Clips</h2>
+        <span class="clip-count-label" id="clipCountLabel">0 clips</span>
+      </div>
+
+      <!-- cards will go here -->
+      <div class="clips-grid" id="clipsGrid"></div>
+
+      <!-- shown when no clips found -->
+      <div class="empty-state hidden" id="emptyState">
+        <div class="empty-glyph">⌗</div>
+        <p class="empty-msg" id="emptyMsg">No clips here yet</p>
+        <p class="empty-sub" id="emptySub">Click "+ New Clip" to get started</p>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- popup modal for adding / editing a clip -->
+  <div class="modal-overlay hidden" id="modalOverlay">
+    <div class="modal">
+
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">New Clip</h3>
+        <button class="action-btn" onclick="closeModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">TITLE</label>
+          <input type="text" id="clipTitle" placeholder="Give this clip a name..." />
+        </div>
+        <div class="form-group">
+          <label class="form-label">CONTENT</label>
+          <textarea id="clipContent" placeholder="Paste or type your content here..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">FOLDER</label>
+          <select id="clipFolder"></select>
+        </div>
+        <div class="modal-actions">
+          <button class="ghost-btn" onclick="closeModal()">Cancel</button>
+          <button class="primary-btn" id="saveBtn" onclick="saveClip()">Save Clip</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- small floating menu for moving a clip to another folder -->
+  <div class="move-menu hidden" id="moveMenu"></div>
+
+  <!-- small popup message at the bottom right -->
+  <div class="toast hidden" id="toast"></div>
+
+  <script src="app.js"></script>
 </body>
 </html>
