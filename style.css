@@ -1,6 +1,7 @@
-/* Google Fonts */
+/* importing fonts from google */
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Playfair+Display:wght@700&display=swap');
 
+/* remove default spacing from all elements */
 * {
   margin: 0;
   padding: 0;
@@ -14,13 +15,12 @@ body {
   height: 100vh;
 }
 
-/* ---- HEADER ---- */
-
+/* top bar */
 .header {
   background-color: #0e0e0f;
   padding: 14px 24px;
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between;   /* logo left, button right */
   align-items: center;
   border-bottom: 1px solid #1e1e20;
 }
@@ -48,15 +48,13 @@ body {
   color: #555;
 }
 
-/* ---- LAYOUT ---- */
-
+/* main layout - sidebar and content side by side */
 .app-body {
   display: flex;
-  height: calc(100vh - 57px);
+  height: calc(100vh - 57px);   /* full height minus header */
 }
 
-/* ---- SIDEBAR ---- */
-
+/* left sidebar */
 .sidebar {
   width: 220px;
   background-color: #0e0e0f;
@@ -65,6 +63,7 @@ body {
   overflow-y: auto;
 }
 
+/* small labels like "LIBRARY" and "FOLDERS" */
 .sidebar-section-label {
   font-size: 10px;
   color: #555;
@@ -73,6 +72,7 @@ body {
   margin-bottom: 8px;
 }
 
+/* each folder in sidebar */
 .sidebar-folder {
   display: flex;
   justify-content: space-between;
@@ -83,7 +83,7 @@ body {
   font-size: 13px;
   color: #888;
   margin-bottom: 2px;
-  border-left: 2px solid transparent;
+  border-left: 2px solid transparent;   /* shows up when active */
 }
 
 .sidebar-folder:hover {
@@ -91,6 +91,7 @@ body {
   color: #e8e0d0;
 }
 
+/* selected folder */
 .sidebar-folder.active {
   background-color: #1e1e20;
   color: #f0a04b;
@@ -103,6 +104,7 @@ body {
   color: #555;
 }
 
+/* "+ New Folder" button */
 .add-folder-btn {
   padding: 8px 12px;
   font-size: 12px;
@@ -117,6 +119,7 @@ body {
   color: #f0a04b;
 }
 
+/* folder name input box */
 .folder-input-box {
   padding: 6px 4px;
 }
@@ -130,19 +133,20 @@ body {
   gap: 6px;
 }
 
-/* ---- MAIN AREA ---- */
-
+/* right side content area */
 .main {
   flex: 1;
   padding: 24px;
   overflow-y: auto;
 }
 
+/* search bar container - relative so icon can sit inside */
 .search-wrap {
   position: relative;
   margin-bottom: 24px;
 }
 
+/* search icon inside the input */
 .search-icon {
   position: absolute;
   left: 12px;
@@ -152,10 +156,12 @@ body {
   font-size: 16px;
 }
 
+/* space on left so text doesn't go under icon */
 .search-input {
   padding-left: 36px;
 }
 
+/* folder name and clip count row */
 .section-header {
   display: flex;
   align-items: center;
@@ -175,14 +181,14 @@ body {
   color: #555;
 }
 
-/* ---- CLIP CARDS ---- */
-
+/* grid that holds all clip cards */
 .clips-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 14px;
 }
 
+/* each clip card */
 .clip-card {
   background-color: #141416;
   border: 1px solid #252528;
@@ -194,6 +200,7 @@ body {
   border-color: #3a3a3c;
 }
 
+/* top part - title and folder tag */
 .clip-card-top {
   display: flex;
   justify-content: space-between;
@@ -208,6 +215,7 @@ body {
   color: #e8e0d0;
 }
 
+/* folder name tag on card */
 .clip-tag {
   font-size: 11px;
   background-color: #252528;
@@ -217,16 +225,18 @@ body {
   white-space: nowrap;
 }
 
+/* content preview, cut off if too long */
 .clip-preview {
   font-size: 12px;
   color: #666;
   max-height: 60px;
   overflow: hidden;
-  white-space: pre-wrap;
+  white-space: pre-wrap;    /* keep line breaks */
   word-break: break-word;
   line-height: 1.6;
 }
 
+/* bottom of card - time and buttons */
 .clip-footer {
   display: flex;
   justify-content: space-between;
@@ -244,8 +254,7 @@ body {
   gap: 6px;
 }
 
-/* ---- EMPTY STATE ---- */
-
+/* shown when no clips */
 .empty-state {
   text-align: center;
   padding: 60px 0;
@@ -268,8 +277,7 @@ body {
   color: #444;
 }
 
-/* ---- BUTTONS ---- */
-
+/* main amber button */
 .primary-btn {
   background-color: #f0a04b;
   color: #0e0e0f;
@@ -292,6 +300,7 @@ body {
   flex: 1;
 }
 
+/* outline button */
 .ghost-btn {
   background-color: transparent;
   border: 1px solid #303033;
@@ -314,6 +323,7 @@ body {
   flex: 1;
 }
 
+/* small buttons on clip cards (move, edit, copy, delete) */
 .action-btn {
   background-color: #1e1e20;
   border: 1px solid #303033;
@@ -330,18 +340,19 @@ body {
   color: #f0a04b;
 }
 
+/* delete button goes red */
 .action-btn.danger:hover {
   border-color: #e05a3a;
   color: #e05a3a;
 }
 
+/* green after copy */
 .action-btn.success {
   border-color: #4caf82;
   color: #4caf82;
 }
 
-/* ---- FORM INPUTS ---- */
-
+/* shared input styles */
 input, textarea, select {
   background-color: #1a1a1c;
   border: 1px solid #303033;
@@ -367,8 +378,7 @@ select option {
   background-color: #1a1a1c;
 }
 
-/* ---- MODAL ---- */
-
+/* dark background behind modal */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -382,6 +392,7 @@ select option {
   z-index: 100;
 }
 
+/* the modal box */
 .modal {
   background-color: #141416;
   border: 1px solid #303033;
@@ -423,6 +434,7 @@ select option {
   letter-spacing: 1px;
 }
 
+/* save/cancel buttons row */
 .modal-actions {
   display: flex;
   justify-content: flex-end;
@@ -430,8 +442,7 @@ select option {
   margin-top: 4px;
 }
 
-/* ---- MOVE MENU ---- */
-
+/* move menu dropdown */
 .move-menu {
   position: fixed;
   background-color: #1a1a1c;
@@ -456,8 +467,7 @@ select option {
   color: #f0a04b;
 }
 
-/* ---- TOAST ---- */
-
+/* small popup message */
 .toast {
   position: fixed;
   bottom: 28px;
@@ -470,8 +480,6 @@ select option {
   font-size: 13px;
   z-index: 999;
 }
-
-/* ---- UTILITY ---- */
 
 .hidden {
   display: none !important;

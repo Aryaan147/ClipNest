@@ -1,197 +1,203 @@
-// ==============================
-//  ClipNest - app.js
-// ==============================
+// ClipNest - app.js
 
-
-// --- starting data ---
-
+// list of folder names
 var folders = ["AI Prompts", "Code Snippets", "Research", "Personal Notes"]
 
+// list of clips (each clip has id, title, content, folder, date)
 var clips = [
   {
-    id: "1",
+    id: 1,
     title: "ChatGPT Rewrite Prompt",
     content: "Rewrite the following text in a clearer, more concise way while preserving the original meaning:",
     folder: "AI Prompts",
-    date: Date.now() - 86400000
+    date: Date.now() - 86400000   // 1 day ago in milliseconds
   },
   {
-    id: "2",
+    id: 2,
     title: "React useEffect Template",
     content: "useEffect(() => {\n  // do something\n  return () => {\n    // cleanup\n  };\n}, []);",
     folder: "Code Snippets",
-    date: Date.now() - 172800000
+    date: Date.now() - 172800000  // 2 days ago
   },
   {
-    id: "3",
+    id: 3,
     title: "Research Paper Structure",
     content: "Abstract → Introduction → Literature Review → Methodology → Results → Discussion → Conclusion",
     folder: "Research",
-    date: Date.now() - 259200000
+    date: Date.now() - 259200000  // 3 days ago
   }
 ]
 
-var currentFolder = "All"
-var currentSearch = ""
-var editingId = null
-var moveMenuOpenFor = null
+var currentFolder = "All"       // which folder is open right now
+var currentSearch = ""          // what user typed in search
+var isEditing = false           // true if editing, false if new
+var editingId = null            // id of clip being edited
+var moveMenuOpenFor = null      // id of clip whose move menu is open
+var nextId = 4                  // next id to give to a new clip
 
 
-// --- load saved data from localStorage ---
+// get saved data from localStorage
+var savedClips = localStorage.getItem("clipnest-clips")
+var savedFolders = localStorage.getItem("clipnest-folders")
 
-function loadData() {
-  var savedClips = localStorage.getItem("clipnest-clips")
-  var savedFolders = localStorage.getItem("clipnest-folders")
-
-  if (savedClips) {
-    clips = JSON.parse(savedClips)
-  }
-  if (savedFolders) {
-    folders = JSON.parse(savedFolders)
-  }
+// if saved data exists, use it
+if (savedClips) {
+  clips = JSON.parse(savedClips)       // turn string back to array
+}
+if (savedFolders) {
+  folders = JSON.parse(savedFolders)   // turn string back to array
 }
 
-function saveData() {
-  localStorage.setItem("clipnest-clips", JSON.stringify(clips))
-  localStorage.setItem("clipnest-folders", JSON.stringify(folders))
-}
+// print how many clips loaded
+console.log("clips loaded:", clips.length)
 
 
-// --- show a small toast message ---
-
+// show a small message at bottom right
 function showToast(message) {
-  var toast = document.getElementById("toast")
-  toast.textContent = message
-  toast.classList.remove("hidden")
+  var toast = document.getElementById("toast")   // get toast element
+  toast.textContent = message                    // set the text
+  toast.classList.remove("hidden")               // make it visible
 
+  // hide after 2 seconds
   setTimeout(function() {
     toast.classList.add("hidden")
   }, 2000)
 }
 
 
-// --- get how long ago a date was ---
-
+// takes a time and returns like "2h ago" or "3d ago"
 function timeAgo(timestamp) {
-  var diff = Date.now() - timestamp
+  var diff = Date.now() - timestamp   // difference in milliseconds
 
-  if (diff < 60000) return "just now"
-  if (diff < 3600000) return Math.floor(diff / 60000) + "m ago"
-  if (diff < 86400000) return Math.floor(diff / 3600000) + "h ago"
-  return Math.floor(diff / 86400000) + "d ago"
+  if (diff < 60000) {                              // less than 1 min
+    return "just now"
+  } else if (diff < 3600000) {                     // less than 1 hour
+    return Math.floor(diff / 60000) + "m ago"      // show minutes
+  } else if (diff < 86400000) {                    // less than 1 day
+    return Math.floor(diff / 3600000) + "h ago"    // show hours
+  } else {
+    return Math.floor(diff / 86400000) + "d ago"   // show days
+  }
 }
 
 
-// --- make text safe to put in html ---
-
-function escapeHtml(text) {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-}
-
-
-// --- render the sidebar folder list ---
-
+// draw the sidebar with all folders and their counts
 function renderSidebar() {
-  // update "All" count
+  // set total count next to "All Clips"
   document.getElementById("count-All").textContent = clips.length
 
-  // clear old folders
-  var folderList = document.getElementById("folderList")
-  folderList.innerHTML = ""
+  var folderList = document.getElementById("folderList")   // get folder list div
+  folderList.innerHTML = ""                                // clear it
 
-  // add each folder
+  // go through each folder
   for (var i = 0; i < folders.length; i++) {
     var folderName = folders[i]
 
-    // count how many clips are in this folder
+    // count how many clips in this folder
     var count = 0
     for (var j = 0; j < clips.length; j++) {
-      if (clips[j].folder === folderName) count++
+      if (clips[j].folder == folderName) {
+        count++
+      }
     }
 
+    // create a div for this folder
     var div = document.createElement("div")
     div.className = "sidebar-folder"
     div.id = "folder-" + folderName
 
-    if (currentFolder === folderName) {
-      div.className += " active"
+    // if this folder is selected, make it active
+    if (currentFolder == folderName) {
+      div.className = "sidebar-folder active"
     }
 
+    // put folder name and count inside
     div.innerHTML = "<span>" + folderName + "</span><span class='folder-count'>" + count + "</span>"
+    // when clicked, switch to this folder
     div.setAttribute("onclick", "changeFolder('" + folderName + "')")
-    folderList.appendChild(div)
+    folderList.appendChild(div)   // add to page
   }
 
-  // highlight the correct active folder
-  var allFolder = document.getElementById("folder-All")
-  if (currentFolder === "All") {
-    allFolder.className = "sidebar-folder active"
+  // highlight "All Clips" if it's selected
+  if (currentFolder == "All") {
+    document.getElementById("folder-All").className = "sidebar-folder active"
   } else {
-    allFolder.className = "sidebar-folder"
+    document.getElementById("folder-All").className = "sidebar-folder"
   }
 }
 
 
-// --- render the clip cards ---
-
+// draw all clip cards on the page
 function renderClips() {
-  var grid = document.getElementById("clipsGrid")
-  var emptyState = document.getElementById("emptyState")
+  var grid = document.getElementById("clipsGrid")        // cards go here
+  var emptyState = document.getElementById("emptyState")  // shown when no clips
 
   // filter clips by folder and search
   var filtered = []
+
   for (var i = 0; i < clips.length; i++) {
     var clip = clips[i]
 
-    var matchesFolder = currentFolder === "All" || clip.folder === currentFolder
-    var matchesSearch = clip.title.toLowerCase().includes(currentSearch) || clip.content.toLowerCase().includes(currentSearch)
+    // check if clip is in the right folder
+    var folderMatch = false
+    if (currentFolder == "All") {
+      folderMatch = true                           // "All" shows everything
+    } else if (clip.folder == currentFolder) {
+      folderMatch = true                           // clip is in selected folder
+    }
 
-    if (matchesFolder && matchesSearch) {
+    // check if clip matches search text
+    var searchMatch = false
+    if (clip.title.toLowerCase().includes(currentSearch) || clip.content.toLowerCase().includes(currentSearch)) {
+      searchMatch = true
+    }
+
+    // add to list if both match
+    if (folderMatch && searchMatch) {
       filtered.push(clip)
     }
   }
 
-  // update heading
+  // update heading and clip count text
   document.getElementById("sectionTitle").textContent = currentFolder
-  document.getElementById("clipCountLabel").textContent = filtered.length + " clip" + (filtered.length !== 1 ? "s" : "")
+  document.getElementById("clipCountLabel").textContent = filtered.length + " clips"
 
-  // show empty state if no clips
-  if (filtered.length === 0) {
+  // if no clips found, show empty message
+  if (filtered.length == 0) {
     grid.innerHTML = ""
-    grid.classList.add("hidden")
-    emptyState.classList.remove("hidden")
+    grid.classList.add("hidden")              // hide the grid
+    emptyState.classList.remove("hidden")      // show empty message
 
-    if (currentSearch !== "") {
+    // different message for search vs no clips
+    if (currentSearch != "") {
       document.getElementById("emptyMsg").textContent = "No clips match your search"
       document.getElementById("emptySub").textContent = "Try a different keyword"
     } else {
       document.getElementById("emptyMsg").textContent = "No clips here yet"
-      document.getElementById("emptySub").textContent = 'Click "+ New Clip" to get started'
+      document.getElementById("emptySub").textContent = "Click + New Clip to get started"
     }
-    return
+    return   // stop here
   }
 
+  // show grid, hide empty message
   grid.classList.remove("hidden")
   emptyState.classList.add("hidden")
-  grid.innerHTML = ""
+  grid.innerHTML = ""   // clear old cards
 
   // make a card for each clip
   for (var i = 0; i < filtered.length; i++) {
     var clip = filtered[i]
 
-    var card = document.createElement("div")
+    var card = document.createElement("div")   // create card div
     card.className = "clip-card"
 
+    // put the card content inside
     card.innerHTML = `
       <div class="clip-card-top">
-        <div class="clip-title">${escapeHtml(clip.title)}</div>
-        <span class="clip-tag">${escapeHtml(clip.folder)}</span>
+        <div class="clip-title">${clip.title}</div>
+        <span class="clip-tag">${clip.folder}</span>
       </div>
-      <div class="clip-preview">${escapeHtml(clip.content)}</div>
+      <div class="clip-preview">${clip.content}</div>
       <div class="clip-footer">
         <span class="clip-time">${timeAgo(clip.date)}</span>
         <div class="clip-actions">
@@ -203,85 +209,89 @@ function renderClips() {
       </div>
     `
 
-    grid.appendChild(card)
+    grid.appendChild(card)   // add card to grid
   }
 }
 
 
-// --- change active folder ---
-
+// when user clicks a folder
 function changeFolder(name) {
-  currentFolder = name
-  renderSidebar()
-  renderClips()
+  currentFolder = name   // change selected folder
+  renderSidebar()        // redraw sidebar
+  renderClips()          // redraw clips
 }
 
 
-// --- search ---
-
+// when user types in search bar
 function searchClips() {
-  currentSearch = document.getElementById("searchInput").value.toLowerCase()
-  renderClips()
+  currentSearch = document.getElementById("searchInput").value.toLowerCase()   // get text
+  renderClips()   // redraw clips with filter
 }
 
 
-// --- open modal for new clip ---
-
+// open modal to add a new clip
 function openNewModal() {
+  isEditing = false      // not editing
   editingId = null
-  document.getElementById("modalTitle").textContent = "New Clip"
-  document.getElementById("saveBtn").textContent = "Save Clip"
-  document.getElementById("clipTitle").value = ""
-  document.getElementById("clipContent").value = ""
-  updateFolderDropdown()
-  document.getElementById("modalOverlay").classList.remove("hidden")
+
+  document.getElementById("modalTitle").textContent = "New Clip"     // set title
+  document.getElementById("saveBtn").textContent = "Save Clip"       // set button text
+  document.getElementById("clipTitle").value = ""                    // clear title input
+  document.getElementById("clipContent").value = ""                  // clear content input
+
+  updateFolderDropdown()   // fill folder options
+  document.getElementById("modalOverlay").classList.remove("hidden")  // show modal
 }
 
 
-// --- open modal to edit a clip ---
-
+// open modal to edit an existing clip
 function editClip(id) {
-  var clip = null
-  for (var i = 0; i < clips.length; i++) {
-    if (clips[i].id === id) clip = clips[i]
-  }
-  if (!clip) return
+  openNewModal()   // open modal first
 
+  isEditing = true   // now in edit mode
   editingId = id
-  document.getElementById("modalTitle").textContent = "Edit Clip"
-  document.getElementById("saveBtn").textContent = "Update Clip"
-  document.getElementById("clipTitle").value = clip.title
-  document.getElementById("clipContent").value = clip.content
-  updateFolderDropdown()
-  document.getElementById("clipFolder").value = clip.folder
-  document.getElementById("modalOverlay").classList.remove("hidden")
+
+  // find the clip and fill in its data
+  for (var i = 0; i < clips.length; i++) {
+    if (clips[i].id == id) {
+      document.getElementById("clipTitle").value = clips[i].title      // fill title
+      document.getElementById("clipContent").value = clips[i].content  // fill content
+      document.getElementById("clipFolder").value = clips[i].folder    // fill folder
+    }
+  }
+
+  document.getElementById("modalTitle").textContent = "Edit Clip"     // change heading
+  document.getElementById("saveBtn").textContent = "Update Clip"      // change button
 }
 
 
-// --- close modal ---
-
+// close the modal
 function closeModal() {
-  document.getElementById("modalOverlay").classList.add("hidden")
+  document.getElementById("modalOverlay").classList.add("hidden")   // hide modal
+  isEditing = false
   editingId = null
 }
 
 
-// --- save or update a clip ---
-
+// save button - works for both new and edit
 function saveClip() {
-  var title = document.getElementById("clipTitle").value.trim()
-  var content = document.getElementById("clipContent").value.trim()
-  var folder = document.getElementById("clipFolder").value
+  var title = document.getElementById("clipTitle").value       // get title
+  var content = document.getElementById("clipContent").value   // get content
+  var folder = document.getElementById("clipFolder").value     // get folder
 
-  if (title === "" || content === "") {
+  title = title.trim()       // remove spaces from start/end
+  content = content.trim()
+
+  // don't save if empty
+  if (title == "" || content == "") {
     showToast("Please fill in title and content.")
     return
   }
 
-  if (editingId !== null) {
-    // update existing clip
+  if (isEditing == true) {
+    // update the existing clip
     for (var i = 0; i < clips.length; i++) {
-      if (clips[i].id === editingId) {
+      if (clips[i].id == editingId) {
         clips[i].title = title
         clips[i].content = content
         clips[i].folder = folder
@@ -289,59 +299,72 @@ function saveClip() {
     }
     showToast("Clip updated!")
   } else {
-    // add new clip at the top
+    // make a new clip
     var newClip = {
-      id: Date.now().toString(),
+      id: nextId,
       title: title,
       content: content,
       folder: folder,
-      date: Date.now()
+      date: Date.now()   // current time
     }
-    clips.unshift(newClip)
+    nextId = nextId + 1        // increase id for next time
+    clips.unshift(newClip)     // add to start of array
     showToast("Clip saved!")
   }
 
-  saveData()
-  closeModal()
-  renderSidebar()
-  renderClips()
+  // save to localStorage so it stays after refresh
+  localStorage.setItem("clipnest-clips", JSON.stringify(clips))
+  localStorage.setItem("clipnest-folders", JSON.stringify(folders))
+
+  closeModal()       // close the modal
+  renderSidebar()    // redraw sidebar
+  renderClips()      // redraw clips
 }
 
 
-// --- delete a clip ---
-
+// delete a clip
 function deleteClip(id) {
+  // make new array without the deleted clip
   var newClips = []
   for (var i = 0; i < clips.length; i++) {
-    if (clips[i].id !== id) {
+    if (clips[i].id != id) {       // keep all except the one to delete
       newClips.push(clips[i])
     }
   }
-  clips = newClips
+  clips = newClips   // replace old array
 
-  saveData()
+  // save to localStorage
+  localStorage.setItem("clipnest-clips", JSON.stringify(clips))
+  localStorage.setItem("clipnest-folders", JSON.stringify(folders))
+
   showToast("Clip deleted.")
   renderSidebar()
   renderClips()
 }
 
 
-// --- copy a clip's content ---
-
+// copy clip text to clipboard
 function copyClip(id) {
   var clip = null
+
+  // find the clip
   for (var i = 0; i < clips.length; i++) {
-    if (clips[i].id === id) clip = clips[i]
+    if (clips[i].id == id) {
+      clip = clips[i]
+    }
   }
-  if (!clip) return
 
-  navigator.clipboard.writeText(clip.content)
+  if (clip == null) return   // if not found, stop
 
+  navigator.clipboard.writeText(clip.content)   // copy to clipboard
+
+  // change button to checkmark
   var btn = document.getElementById("copybtn-" + id)
   btn.textContent = "✓"
-  btn.classList.add("success")
+  btn.classList.add("success")       // make it green
   showToast("Copied to clipboard!")
 
+  // change back after 1.5 seconds
   setTimeout(function() {
     btn.textContent = "⎘"
     btn.classList.remove("success")
@@ -349,13 +372,12 @@ function copyClip(id) {
 }
 
 
-// --- open move menu ---
-
+// open the move menu (pick which folder to move to)
 function openMoveMenu(id, btn) {
   var menu = document.getElementById("moveMenu")
 
-  // close menu if clicking the same button again
-  if (moveMenuOpenFor === id) {
+  // if same menu is already open, close it
+  if (moveMenuOpenFor == id) {
     menu.classList.add("hidden")
     moveMenuOpenFor = null
     return
@@ -363,19 +385,19 @@ function openMoveMenu(id, btn) {
 
   moveMenuOpenFor = id
 
-  // find current folder of this clip
+  // find the clip
   var clip = null
   for (var i = 0; i < clips.length; i++) {
-    if (clips[i].id === id) clip = clips[i]
+    if (clips[i].id == id) {
+      clip = clips[i]
+    }
   }
 
-  menu.innerHTML = ""
+  menu.innerHTML = ""   // clear old items
 
-  // add a button for each other folder
-  var hasOptions = false
+  // add all folders except the one clip is already in
   for (var i = 0; i < folders.length; i++) {
-    if (folders[i] !== clip.folder) {
-      hasOptions = true
+    if (folders[i] != clip.folder) {
       var item = document.createElement("div")
       item.className = "move-menu-item"
       item.textContent = folders[i]
@@ -384,7 +406,8 @@ function openMoveMenu(id, btn) {
     }
   }
 
-  if (!hasOptions) {
+  // if no other folders exist
+  if (menu.innerHTML == "") {
     var item = document.createElement("div")
     item.className = "move-menu-item"
     item.textContent = "No other folders"
@@ -392,38 +415,42 @@ function openMoveMenu(id, btn) {
     menu.appendChild(item)
   }
 
-  // position the menu below the button
-  var btnRect = btn.getBoundingClientRect()
-  menu.style.top = (btnRect.bottom + 6) + "px"
-  menu.style.left = (btnRect.right - 160) + "px"
-  menu.classList.remove("hidden")
+  // put menu below the button
+  var rect = btn.getBoundingClientRect()   // get button position
+  menu.style.top = (rect.bottom + 6) + "px"
+  menu.style.left = (rect.right - 160) + "px"
+  menu.classList.remove("hidden")   // show menu
 }
 
 
-// --- move a clip to a different folder ---
-
+// move clip to another folder
 function moveClip(id, targetFolder) {
+  // find clip and change its folder
   for (var i = 0; i < clips.length; i++) {
-    if (clips[i].id === id) {
+    if (clips[i].id == id) {
       clips[i].folder = targetFolder
     }
   }
 
-  saveData()
+  // save to localStorage
+  localStorage.setItem("clipnest-clips", JSON.stringify(clips))
+  localStorage.setItem("clipnest-folders", JSON.stringify(folders))
+
   showToast("Moved to " + targetFolder)
-  document.getElementById("moveMenu").classList.add("hidden")
+  document.getElementById("moveMenu").classList.add("hidden")   // hide menu
   moveMenuOpenFor = null
   renderSidebar()
   renderClips()
 }
 
 
-// --- close move menu if clicking outside ---
-
+// close move menu if clicking outside
 document.addEventListener("click", function(e) {
   var menu = document.getElementById("moveMenu")
-  var clickedMoveBtn = e.target.getAttribute("onclick") && e.target.getAttribute("onclick").includes("openMoveMenu")
+  var onclickVal = e.target.getAttribute("onclick")
+  var clickedMoveBtn = onclickVal && onclickVal.includes("openMoveMenu")
 
+  // if click is not on menu and not on move button, close it
   if (!menu.contains(e.target) && !clickedMoveBtn) {
     menu.classList.add("hidden")
     moveMenuOpenFor = null
@@ -431,48 +458,61 @@ document.addEventListener("click", function(e) {
 })
 
 
-// --- add new folder ---
-
+// show folder name input
 function showFolderInput() {
-  document.getElementById("addFolderBtn").classList.add("hidden")
-  document.getElementById("folderInputBox").classList.remove("hidden")
-  document.getElementById("folderNameInput").focus()
+  document.getElementById("addFolderBtn").classList.add("hidden")        // hide button
+  document.getElementById("folderInputBox").classList.remove("hidden")   // show input
+  document.getElementById("folderNameInput").focus()                     // put cursor in input
 }
 
+// hide folder name input
 function hideFolderInput() {
-  document.getElementById("addFolderBtn").classList.remove("hidden")
-  document.getElementById("folderInputBox").classList.add("hidden")
-  document.getElementById("folderNameInput").value = ""
+  document.getElementById("addFolderBtn").classList.remove("hidden")     // show button
+  document.getElementById("folderInputBox").classList.add("hidden")      // hide input
+  document.getElementById("folderNameInput").value = ""                  // clear input
 }
 
+// add a new folder
 function addNewFolder() {
-  var name = document.getElementById("folderNameInput").value.trim()
+  var name = document.getElementById("folderNameInput").value.trim()   // get name
 
-  if (name === "") {
+  if (name == "") {
     showToast("Please enter a folder name.")
     return
   }
 
-  if (folders.includes(name)) {
+  // check if folder name already taken
+  var alreadyExists = false
+  for (var i = 0; i < folders.length; i++) {
+    if (folders[i] == name) {
+      alreadyExists = true
+    }
+  }
+
+  if (alreadyExists) {
     showToast("That folder already exists.")
     return
   }
 
-  folders.push(name)
-  saveData()
-  showToast("Folder \"" + name + "\" created!")
+  folders.push(name)   // add to list
+
+  // save to localStorage
+  localStorage.setItem("clipnest-clips", JSON.stringify(clips))
+  localStorage.setItem("clipnest-folders", JSON.stringify(folders))
+
+  showToast("Folder created!")
   hideFolderInput()
   renderSidebar()
   updateFolderDropdown()
 }
 
 
-// --- fill the folder dropdown in the modal ---
-
+// fill folder options in the modal dropdown
 function updateFolderDropdown() {
   var select = document.getElementById("clipFolder")
-  select.innerHTML = ""
+  select.innerHTML = ""   // clear old options
 
+  // add each folder as an option
   for (var i = 0; i < folders.length; i++) {
     var option = document.createElement("option")
     option.value = folders[i]
@@ -482,26 +522,25 @@ function updateFolderDropdown() {
 }
 
 
-// --- close modal when clicking outside it ---
-
+// close modal when clicking the dark area behind it
 document.getElementById("modalOverlay").addEventListener("click", function(e) {
-  if (e.target === document.getElementById("modalOverlay")) {
+  if (e.target == document.getElementById("modalOverlay")) {
     closeModal()
   }
 })
 
-
-// --- press Enter in folder input to confirm ---
-
+// keyboard shortcuts for folder input
 document.getElementById("folderNameInput").addEventListener("keydown", function(e) {
-  if (e.key === "Enter") addNewFolder()
-  if (e.key === "Escape") hideFolderInput()
+  if (e.key == "Enter") {     // press enter to add
+    addNewFolder()
+  }
+  if (e.key == "Escape") {    // press escape to cancel
+    hideFolderInput()
+  }
 })
 
 
-// --- start the app ---
-
-loadData()
+// start the app
 renderSidebar()
 renderClips()
 updateFolderDropdown()
