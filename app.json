@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "ClipNest",
+    "slug": "clipnest",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true
+    }
+  }
+}
