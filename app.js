@@ -52,18 +52,6 @@ if (savedFolders) {
 console.log("clips loaded:", clips.length)
 
 
-// show a small message at bottom right
-function showToast(message) {
-  var toast = document.getElementById("toast")   // get toast element
-  toast.textContent = message                    // set the text
-  toast.classList.remove("hidden")               // make it visible
-
-  // hide after 2 seconds
-  setTimeout(function() {
-    toast.classList.add("hidden")
-  }, 2000)
-}
-
 
 // takes a time and returns like "2h ago" or "3d ago"
 function timeAgo(timestamp) {
@@ -85,7 +73,6 @@ function timeAgo(timestamp) {
 function renderSidebar() {
   // set total count next to "All Clips"
   document.getElementById("count-All").textContent = clips.length
-
   var folderList = document.getElementById("folderList")   // get folder list div
   folderList.innerHTML = ""                                // clear it
 
@@ -104,7 +91,6 @@ function renderSidebar() {
     // create a div for this folder
     var div = document.createElement("div")
     div.className = "sidebar-folder"
-    div.id = "folder-" + folderName
 
     // if this folder is selected, make it active
     if (currentFolder == folderName) {
@@ -119,12 +105,16 @@ function renderSidebar() {
   }
 
   // highlight "All Clips" if it's selected
+  var allFolder = document.getElementById("count-All").parentElement
   if (currentFolder == "All") {
-    document.getElementById("folder-All").className = "sidebar-folder active"
+    allFolder.className = "sidebar-folder active"
   } else {
-    document.getElementById("folder-All").className = "sidebar-folder"
+    allFolder.className = "sidebar-folder"
   }
 }
+
+
+
 
 
 // draw all clip cards on the page
@@ -284,7 +274,6 @@ function saveClip() {
 
   // don't save if empty
   if (title == "" || content == "") {
-    showToast("Please fill in title and content.")
     return
   }
 
@@ -297,7 +286,6 @@ function saveClip() {
         clips[i].folder = folder
       }
     }
-    showToast("Clip updated!")
   } else {
     // make a new clip
     var newClip = {
@@ -309,7 +297,6 @@ function saveClip() {
     }
     nextId = nextId + 1        // increase id for next time
     clips.unshift(newClip)     // add to start of array
-    showToast("Clip saved!")
   }
 
   // save to localStorage so it stays after refresh
@@ -337,7 +324,6 @@ function deleteClip(id) {
   localStorage.setItem("clipnest-clips", JSON.stringify(clips))
   localStorage.setItem("clipnest-folders", JSON.stringify(folders))
 
-  showToast("Clip deleted.")
   renderSidebar()
   renderClips()
 }
@@ -362,7 +348,6 @@ function copyClip(id) {
   var btn = document.getElementById("copybtn-" + id)
   btn.textContent = "✓"
   btn.classList.add("success")       // make it green
-  showToast("Copied to clipboard!")
 
   // change back after 1.5 seconds
   setTimeout(function() {
@@ -436,7 +421,6 @@ function moveClip(id, targetFolder) {
   localStorage.setItem("clipnest-clips", JSON.stringify(clips))
   localStorage.setItem("clipnest-folders", JSON.stringify(folders))
 
-  showToast("Moved to " + targetFolder)
   document.getElementById("moveMenu").classList.add("hidden")   // hide menu
   moveMenuOpenFor = null
   renderSidebar()
@@ -477,7 +461,6 @@ function addNewFolder() {
   var name = document.getElementById("folderNameInput").value.trim()   // get name
 
   if (name == "") {
-    showToast("Please enter a folder name.")
     return
   }
 
@@ -490,7 +473,6 @@ function addNewFolder() {
   }
 
   if (alreadyExists) {
-    showToast("That folder already exists.")
     return
   }
 
@@ -500,7 +482,6 @@ function addNewFolder() {
   localStorage.setItem("clipnest-clips", JSON.stringify(clips))
   localStorage.setItem("clipnest-folders", JSON.stringify(folders))
 
-  showToast("Folder created!")
   hideFolderInput()
   renderSidebar()
   updateFolderDropdown()
