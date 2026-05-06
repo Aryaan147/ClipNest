@@ -8,8 +8,7 @@
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 </head>
-<body>
-
+<
   <!-- top bar -->
   <div class="header">
     <div class="header-logo">
@@ -50,6 +49,14 @@
         </div>
       </div>
 
+      <div style="margin-top: auto; padding-top: 24px;">
+        <p class="sidebar-section-label">TRASH</p>
+        <div class="sidebar-folder" onclick="changeFolder('Trash')">
+          <span>Recycle Bin</span>
+          <span class="folder-count" id="count-Trash">0</span>
+        </div>
+      </div>
+
     </div>
 
     <!-- right content area -->
@@ -63,8 +70,17 @@
 
       <!-- heading -->
       <div class="section-header">
-        <h2 class="section-title" id="sectionTitle">All Clips</h2>
-        <span class="clip-count-label" id="clipCountLabel">0 clips</span>
+        <div class="section-header-left">
+          <h2 class="section-title" id="sectionTitle">All Clips</h2>
+          <span class="clip-count-label" id="clipCountLabel">0 clips</span>
+        </div>
+        <div class="section-header-right">
+          <select class="sort-select" id="sortSelect" onchange="changeSort()">
+            <option value="Newest">Newest First</option>
+            <option value="Oldest">Oldest First</option>
+            <option value="A-Z">Alphabetical (A-Z)</option>
+          </select>
+        </div>
       </div>
 
       <!-- cards will go here -->
@@ -97,7 +113,8 @@
         </div>
         <div class="form-group">
           <label class="form-label">CONTENT</label>
-          <textarea id="clipContent" placeholder="Paste or type your content here..."></textarea>
+          <textarea id="clipContent" placeholder="Paste or type your content here..." oninput="updateCounters()"></textarea>
+          <div id="counterLabel" class="counter-label">0 words | 0 characters</div>
         </div>
         <div class="form-group">
           <label class="form-label">FOLDER</label>
