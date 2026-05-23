@@ -1,544 +1,120 @@
-/* importing fonts from google */
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Playfair+Display:wght@700&display=swap');
-
-/* remove default spacing from all elements */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  scrollbar-width: thin;
-  scrollbar-color: #303033 transparent;
-}
-
-/* custom webkit scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background-color: #303033;
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background-color: #555;
-}
+/* my styles */
 
 body {
-  font-family: 'DM Mono', monospace;
-  background-color: #0e0e0f;
-  color: #e8e0d0;
-  height: calc(100vh / 1.1);
-  width: calc(100vw / 1.1);
-  overflow: hidden;
-  zoom: 1.1;
-  display: flex;
-  flex-direction: column;
+  background-color: black;
+  color: white;
+  font-family: Arial, Helvetica, sans-serif; /* basic font */
+  margin: 0;
+  padding: 0;
 }
 
-/* top bar */
-.header {
-  background-color: #0e0e0f;
-  padding: 14px 24px;
-  display: flex;
-  justify-content: space-between;
-  /* logo left, button right */
-  align-items: center;
-  border-bottom: 1px solid #1e1e20;
-  flex-shrink: 0;
+.myheader {
+  background-color: #111;
+  padding: 20px;
+  border-bottom: 2px solid #333;
 }
 
-.header-logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.logo-icon {
-  font-size: 22px;
-  color: #f0a04b;
-}
-
-.logo-text {
-  font-family: 'Playfair Display', serif;
-  font-size: 20px;
-  font-weight: 700;
-  color: #e8e0d0;
-}
-
-.logo-version {
-  font-size: 11px;
-  color: #555;
-}
-
-/* main layout - sidebar and content side by side */
-.app-body {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-}
-
-/* left sidebar */
-.sidebar {
-  width: 220px;
-  background-color: #0e0e0f;
-  padding: 20px 12px;
-  border-right: 1px solid #1e1e20;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-/* small labels like "LIBRARY" and "FOLDERS" */
-.sidebar-section-label {
-  font-size: 10px;
-  color: #555;
-  letter-spacing: 2px;
-  padding-left: 12px;
-  margin-bottom: 8px;
-}
-
-/* each folder in sidebar */
-.sidebar-folder {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
-  color: #888;
-  margin-bottom: 2px;
-  border-left: 2px solid transparent;
-  /* shows up when active */
-}
-
-.sidebar-folder:hover {
-  background-color: #1e1e20;
-  color: #e8e0d0;
-}
-
-/* selected folder */
-.sidebar-folder.active {
-  background-color: #1e1e20;
-  color: #f0a04b;
-  border-left-color: #f0a04b;
-  padding-left: 10px;
-}
-
-.folder-count {
-  font-size: 11px;
-  color: #555;
-}
-
-/* "+ New Folder" button */
-.add-folder-btn {
-  padding: 8px 12px;
-  font-size: 12px;
-  color: #555;
-  cursor: pointer;
-  border-radius: 6px;
-  margin-top: 4px;
-}
-
-.add-folder-btn:hover {
-  background-color: #1e1e20;
-  color: #f0a04b;
-}
-
-/* folder name input box */
-.folder-input-box {
-  padding: 6px 4px;
-}
-
-.folder-input-box input {
-  margin-bottom: 6px;
-}
-
-.folder-input-actions {
-  display: flex;
-  gap: 6px;
-}
-
-/* right side content area */
-.main {
-  flex: 1;
-  padding: 24px;
-  overflow-y: auto;
-}
-
-/* search bar container - relative so icon can sit inside */
-.search-wrap {
-  position: relative;
-  margin-bottom: 24px;
-}
-
-/* search icon inside the input */
-.search-icon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #555;
-  font-size: 16px;
-}
-
-/* space on left so text doesn't go under icon */
-.search-input {
-  padding-left: 36px;
-}
-
-/* folder name and clip count row */
-.section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-
-.section-header-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.sort-select {
-  padding: 6px 10px;
-  font-size: 12px;
-  background-color: #1a1a1c;
-  border: 1px solid #303033;
-  color: #e8e0d0;
-  border-radius: 6px;
-  outline: none;
-  cursor: pointer;
-  width: auto;
-}
-
-.section-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 22px;
-  font-weight: 700;
-  color: #e8e0d0;
-}
-
-.clip-count-label {
-  font-size: 12px;
-  color: #555;
-}
-
-/* grid that holds all clip cards */
-.clips-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 14px;
-}
-
-/* each clip card */
-.clip-card {
-  background-color: #141416;
-  border: 1px solid #252528;
-  border-radius: 10px;
-  padding: 18px;
-  display: flex;
-  flex-direction: column;
-}
-
-.clip-card:hover {
-  border-color: #3a3a3c;
-}
-
-/* top part - title and folder tag */
-.clip-card-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 8px;
-  gap: 8px;
-}
-
-.clip-title {
-  font-size: 14px;
-  font-weight: 500;
-  color: #e8e0d0;
-}
-
-/* folder name tag on card */
-.clip-tag {
-  font-size: 11px;
-  background-color: #252528;
-  color: #888;
-  padding: 2px 8px;
-  border-radius: 4px;
-  white-space: nowrap;
-}
-
-/* content preview, cut off if too long */
-.clip-preview {
-  font-size: 12px;
-  color: #666;
-  max-height: 100px;
-  overflow: hidden;
-  white-space: pre-wrap;
-  /* keep line breaks */
-  word-break: break-word;
-  line-height: 1.6;
-}
-
-/* bottom of card - time and buttons */
-.clip-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: auto;
-  padding-top: 14px;
-}
-
-.clip-time {
-  font-size: 11px;
-  color: #444;
-}
-
-.clip-actions {
-  display: flex;
-  gap: 6px;
-}
-
-/* shown when no clips */
-.empty-state {
-  text-align: center;
-  padding: 60px 0;
-}
-
-.empty-glyph {
-  font-size: 48px;
-  margin-bottom: 16px;
-  color: #333;
-}
-
-.empty-msg {
-  font-size: 14px;
-  color: #555;
-  margin-bottom: 4px;
-}
-
-.empty-sub {
-  font-size: 12px;
-  color: #444;
-}
-
-/* main amber button */
-.primary-btn {
-  background-color: #f0a04b;
-  color: #0e0e0f;
-  border: none;
-  padding: 10px 22px;
-  border-radius: 7px;
-  font-family: 'DM Mono', monospace;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.primary-btn:hover {
-  background-color: #e8943a;
-}
-
-.primary-btn.small {
-  padding: 6px 12px;
-  font-size: 12px;
-  flex: 1;
-}
-
-/* outline button */
-.ghost-btn {
-  background-color: transparent;
-  border: 1px solid #303033;
-  color: #888;
-  padding: 10px 22px;
-  border-radius: 7px;
-  font-family: 'DM Mono', monospace;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.ghost-btn:hover {
-  border-color: #555;
-  color: #e8e0d0;
-}
-
-.ghost-btn.small {
-  padding: 6px 12px;
-  font-size: 12px;
-  flex: 1;
-}
-
-/* small buttons on clip cards (move, edit, copy, delete) */
-.action-btn {
-  background-color: #1e1e20;
-  border: 1px solid #303033;
-  color: #888;
-  padding: 5px 10px;
-  border-radius: 5px;
-  font-size: 12px;
-  font-family: 'DM Mono', monospace;
-  cursor: pointer;
-}
-
-.action-btn:hover {
-  border-color: #f0a04b;
-  color: #f0a04b;
-}
-
-.action-btn.pinned {
-  color: #f0a04b;
-  border-color: #f0a04b;
-}
-
-/* delete button goes red */
-.action-btn.danger:hover {
-  border-color: #e05a3a;
-  color: #e05a3a;
-}
-
-/* green after copy */
-.action-btn.success {
-  border-color: #4caf82;
-  color: #4caf82;
-}
-
-/* shared input styles */
-input,
-textarea,
-select {
-  background-color: #1a1a1c;
-  border: 1px solid #303033;
-  color: #e8e0d0;
-  font-family: 'DM Mono', monospace;
-  font-size: 13px;
-  border-radius: 7px;
-  padding: 10px 14px;
+#wrapper {
   width: 100%;
-  outline: none;
 }
 
-input:focus,
-textarea:focus,
-select:focus {
-  border-color: #f0a04b;
+.mysidebar {
+  width: 20%;
+  float: left; /* old school layout! */
+  background-color: #111;
+  height: 1000px; /* hardcoded height lol */
+  padding: 20px;
+  box-sizing: border-box;
 }
 
-textarea {
-  resize: vertical;
-  min-height: 120px;
+.mymain {
+  width: 80%;
+  float: left;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
-select option {
-  background-color: #1a1a1c;
+.folder {
+  color: grey;
 }
-
-/* dark background behind modal */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 100;
+.folder:hover {
+  color: white;
+  background-color: #333;
 }
-
-/* the modal box */
-.modal {
-  background-color: #141416;
-  border: 1px solid #303033;
-  border-radius: 14px;
-  padding: 28px;
-  width: 520px;
-  max-width: 95vw;
+.active {
+  color: orange !important;
+  font-weight: bold;
 }
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 22px;
-}
-
-.modal-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 18px;
-  font-weight: 700;
-  color: #e8e0d0;
-}
-
-.modal-body {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.form-label {
-  font-size: 11px;
-  color: #666;
-  letter-spacing: 1px;
-}
-
-.counter-label {
-  font-size: 11px;
-  color: #666;
-  text-align: right;
-  margin-top: 2px;
-}
-
-/* save/cancel buttons row */
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 4px;
-}
-
-/* move menu dropdown */
-.move-menu {
-  position: fixed;
-  background-color: #1a1a1c;
-  border: 1px solid #303033;
-  border-radius: 8px;
-  z-index: 200;
-  min-width: 160px;
-  overflow: hidden;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-}
-
-.move-menu-item {
-  padding: 9px 14px;
-  font-size: 12px;
-  color: #888;
-  cursor: pointer;
-  font-family: 'DM Mono', monospace;
-}
-
-.move-menu-item:hover {
-  background-color: #252528;
-  color: #f0a04b;
-}
-
-
 
 .hidden {
   display: none !important;
+}
+
+.clip-card {
+  background-color: #222;
+  border: 1px solid #444;
+  padding: 15px;
+  margin-bottom: 15px; /* no flex/grid gap, just margin bottom */
+  width: 300px;
+  float: left;
+  margin-right: 15px;
+  height: 250px;
+}
+
+.clip-card-top {
+  margin-bottom: 10px;
+}
+
+.clip-title {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.clip-tag {
+  background-color: #555;
+  padding: 2px;
+  font-size: 12px;
+}
+
+.clip-preview {
+  color: #aaa;
+  font-size: 14px;
+  height: 100px; /* fixed height for preview */
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.clip-time {
+  font-size: 10px;
+  color: #777;
+}
+
+.clip-actions {
+  margin-top: 10px;
+}
+
+.action-btn {
+  background-color: #333;
+  color: white;
+  border: 1px solid #555;
+  padding: 5px;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.action-btn:hover {
+  background-color: #555;
+}
+
+.danger {
+  color: red !important;
+}
+
+.move-menu-item {
+  color: white;
+  padding: 5px;
+  cursor: pointer;
+}
+.move-menu-item:hover {
+  background-color: grey;
 }

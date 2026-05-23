@@ -1,17 +1,16 @@
-// ClipNest - app.js
+// main app code by aryaan
+// my first project 
 
-// list of folder names
-var folders = ["AI Prompts", "Code Snippets", "Research", "Personal Notes"]
+var myFolders = ["AI Prompts", "Code Snippets", "Research", "Personal Notes"];
 
-// list of clips (each clip has id, title, content, folder, date)
-var clips = [
+var allMyClips = [
   {
     id: 1,
     title: "ChatGPT Rewrite Prompt",
     content: "Rewrite the following text in a clearer, more concise way while preserving the original meaning:",
     folder: "AI Prompts",
     isPinned: false,
-    date: Date.now() - 86400000   // 1 day ago in milliseconds
+    date: Date.now() - 86400000 // one day
   },
   {
     id: 2,
@@ -19,7 +18,7 @@ var clips = [
     content: "useEffect(() => {\n  // do something\n  return () => {\n    // cleanup\n  };\n}, []);",
     folder: "Code Snippets",
     isPinned: false,
-    date: Date.now() - 172800000  // 2 days ago
+    date: Date.now() - 172800000 // two days
   },
   {
     id: 3,
@@ -27,636 +26,582 @@ var clips = [
     content: "Abstract → Introduction → Literature Review → Methodology → Results → Discussion → Conclusion",
     folder: "Research",
     isPinned: false,
-    date: Date.now() - 259200000  // 3 days ago
+    date: Date.now() - 259200000 // 3 days
   }
-]
+];
 
-var deletedClips = []
+var theDeletedOnes = [];
 
+var theFolderImIn = "All";
+var whatImSearching = "";
+var howToSort = "Newest";
+var amIEditing = false; // true if editing
+var myEditId = null;
+var myMoveMenuOpen = null;
+var nextClipId = 4;
 
-var currentFolder = "All"       // which folder is open right now
-var currentSearch = ""          // what user typed in search
-var currentSort = "Newest"      // sorting preference
-var isEditing = false           // true if editing, false if new
-var editingId = null            // id of clip being edited
-var moveMenuOpenFor = null      // id of clip whose move menu is open
-var nextId = 4                  // next id to give to a new clip
+// load from storage
+var savedClips = localStorage.getItem("clipnest-clips");
+var savedFolders = localStorage.getItem("clipnest-folders");
+var savedSort = localStorage.getItem("clipnest-sort");
+var savedDeleted = localStorage.getItem("clipnest-deleted");
 
-
-// get saved data from localStorage
-var savedClips = localStorage.getItem("clipnest-clips")
-var savedFolders = localStorage.getItem("clipnest-folders")
-var savedSort = localStorage.getItem("clipnest-sort")
-var savedDeleted = localStorage.getItem("clipnest-deleted")
-
-// if saved data exists, use it
-if (savedClips) {
-  clips = JSON.parse(savedClips)       // turn string back to array
+if (savedClips != null) {
+  allMyClips = JSON.parse(savedClips);
 }
-if (savedFolders) {
-  folders = JSON.parse(savedFolders)   // turn string back to array
+if (savedFolders != null) {
+  myFolders = JSON.parse(savedFolders);
 }
-if (savedSort) {
-  currentSort = savedSort
+if (savedSort != null) {
+  howToSort = savedSort;
 }
-if (savedDeleted) {
-  deletedClips = JSON.parse(savedDeleted)
+if (savedDeleted != null) {
+  theDeletedOnes = JSON.parse(savedDeleted);
 }
 
-// print how many clips loaded
-console.log("clips loaded:", clips.length)
+console.log("clips loaded: " + allMyClips.length);
 
-
-
-// takes a time and returns like "2h ago" or "3d ago"
 function timeAgo(timestamp) {
-  var diff = Date.now() - timestamp   // difference in milliseconds
+  var diff = Date.now() - timestamp; // math
 
-  if (diff < 60000) {                              // less than 1 min
-    return "just now"
-  } else if (diff < 3600000) {                     // less than 1 hour
-    return Math.floor(diff / 60000) + "m ago"      // show minutes
-  } else if (diff < 86400000) {                    // less than 1 day
-    return Math.floor(diff / 3600000) + "h ago"    // show hours
+  if (diff < 60000) {
+    return "just now";
+  } else if (diff < 3600000) {
+    var min = diff / 60000;
+    return Math.floor(min) + "m ago";
+  } else if (diff < 86400000) {
+    var hr = diff / 3600000;
+    return Math.floor(hr) + "h ago";
   } else {
-    return Math.floor(diff / 86400000) + "d ago"   // show days
+    var days = diff / 86400000;
+    return Math.floor(days) + "d ago";
   }
 }
 
-
-// draw the sidebar with all folders and their counts
 function renderSidebar() {
-  // set total count next to "All Clips"
-  document.getElementById("count-All").textContent = clips.length
-  document.getElementById("count-Trash").textContent = deletedClips.length
-  var folderList = document.getElementById("folderList")   // get folder list div
-  folderList.innerHTML = ""                                // clear it
+  document.getElementById("count-All").innerHTML = allMyClips.length;
+  document.getElementById("count-Trash").innerHTML = theDeletedOnes.length;
+  
+  var myFolderList = document.getElementById("folderList");
+  myFolderList.innerHTML = ""; // clear
 
-  // go through each folder
-  for (var i = 0; i < folders.length; i++) {
-    var folderName = folders[i]
-
-    // count how many clips in this folder
-    var count = 0
-    for (var j = 0; j < clips.length; j++) {
-      if (clips[j].folder == folderName) {
-        count++
+  for (var i = 0; i < myFolders.length; i++) {
+    var fn = myFolders[i];
+    
+    // count how many clips in folder
+    var count = 0;
+    for (var j = 0; j < allMyClips.length; j++) {
+      if (allMyClips[j].folder == fn) {
+        count = count + 1;
       }
     }
 
-    // create a div for this folder
-    var div = document.createElement("div")
-    div.className = "sidebar-folder"
-
-    // if this folder is selected, make it active
-    if (currentFolder == folderName) {
-      div.className = "sidebar-folder active"
+    var div = document.createElement("div");
+    if (theFolderImIn == fn) {
+      div.className = "sidebar-folder active";
+    } else {
+      div.className = "sidebar-folder";
     }
-
-    // put folder name and count inside
-    div.innerHTML = "<span>" + folderName + "</span><span class='folder-count'>" + count + "</span>"
-    // when clicked, switch to this folder
-    div.setAttribute("onclick", "changeFolder('" + folderName + "')")
-    folderList.appendChild(div)   // add to page
+    
+    div.innerHTML = "<span>" + fn + "</span> <span class='folder-count'>(" + count + ")</span>";
+    div.setAttribute("onclick", "changeFolder('" + fn + "')");
+    myFolderList.appendChild(div);
   }
 
-  // highlight "All Clips" if it's selected
-  var allFolder = document.getElementById("count-All").parentElement
-  if (currentFolder == "All") {
-    allFolder.className = "sidebar-folder active"
+  // update all clips class
+  if (theFolderImIn == "All") {
+    document.getElementById("count-All").parentElement.className = "sidebar-folder active";
   } else {
-    allFolder.className = "sidebar-folder"
+    document.getElementById("count-All").parentElement.className = "sidebar-folder";
   }
 
-  // highlight "Trash" if it's selected
-  var trashFolder = document.getElementById("count-Trash").parentElement
-  if (currentFolder == "Trash") {
-    trashFolder.className = "sidebar-folder active"
+  // update trash class
+  if (theFolderImIn == "Trash") {
+    document.getElementById("count-Trash").parentElement.className = "sidebar-folder active";
   } else {
-    trashFolder.className = "sidebar-folder"
+    document.getElementById("count-Trash").parentElement.className = "sidebar-folder";
   }
 }
 
-
-
-
-
-// draw all clip cards on the page
 function renderClips() {
-  var grid = document.getElementById("clipsGrid")        // cards go here
-  var emptyState = document.getElementById("emptyState")  // shown when no clips
+  var grid = document.getElementById("clipsGrid");
+  var emptyState = document.getElementById("emptyState");
 
-  // filter clips by folder and search
-  var filtered = []
+  var sourceArray;
+  if (theFolderImIn == "Trash") {
+    sourceArray = theDeletedOnes;
+  } else {
+    sourceArray = allMyClips;
+  }
 
-  var sourceArray = currentFolder == "Trash" ? deletedClips : clips
+  var myFilteredArray = [];
 
   for (var i = 0; i < sourceArray.length; i++) {
-    var clip = sourceArray[i]
+    var clip = sourceArray[i];
 
-    // check if clip is in the right folder
-    var folderMatch = false
-    if (currentFolder == "All" || currentFolder == "Trash") {
-      folderMatch = true                           // "All" and "Trash" show everything from their source array
-    } else if (clip.folder == currentFolder) {
-      folderMatch = true                           // clip is in selected folder
+    var fMatch = false;
+    if (theFolderImIn == "All" || theFolderImIn == "Trash") {
+      fMatch = true;
+    } else if (clip.folder == theFolderImIn) {
+      fMatch = true;
     }
 
-    // check if clip matches search text
-    var searchMatch = false
-    if (clip.title.toLowerCase().includes(currentSearch) || clip.content.toLowerCase().includes(currentSearch)) {
-      searchMatch = true
+    var sMatch = false;
+    var t1 = clip.title.toLowerCase();
+    var t2 = clip.content.toLowerCase();
+    if (t1.includes(whatImSearching) || t2.includes(whatImSearching)) {
+      sMatch = true;
     }
 
-    // add to list if both match
-    if (folderMatch && searchMatch) {
-      filtered.push(clip)
+    if (fMatch == true && sMatch == true) {
+      myFilteredArray.push(clip);
     }
   }
 
-  // sort filtered clips
-  filtered.sort(function(a, b) {
-    if (currentSort == "Newest") {
-      return b.date - a.date
-    } else if (currentSort == "Oldest") {
-      return a.date - b.date
-    } else if (currentSort == "A-Z") {
-      var titleA = a.title.toLowerCase()
-      var titleB = b.title.toLowerCase()
-      if (titleA < titleB) return -1
-      if (titleA > titleB) return 1
-      return 0
-    }
-    return 0
-  })
+  // sorting stuff with bubble sort!
+  for (var i = 0; i < myFilteredArray.length; i++) {
+    for (var j = 0; j < myFilteredArray.length - 1; j++) {
+      var a = myFilteredArray[j];
+      var b = myFilteredArray[j + 1];
+      var swap = false;
 
-  // separate pinned and unpinned to put pinned at the top
-  var pinnedClips = []
-  var unpinnedClips = []
-  for (var i = 0; i < filtered.length; i++) {
-    if (filtered[i].isPinned) {
-      pinnedClips.push(filtered[i])
+      if (howToSort == "Newest") {
+        if (b.date > a.date) swap = true;
+      } else if (howToSort == "Oldest") {
+        if (a.date > b.date) swap = true;
+      } else if (howToSort == "A-Z") {
+        if (a.title.toLowerCase() > b.title.toLowerCase()) swap = true;
+      }
+
+      if (swap == true) {
+        var temp = myFilteredArray[j];
+        myFilteredArray[j] = myFilteredArray[j + 1];
+        myFilteredArray[j + 1] = temp;
+      }
+    }
+  }
+
+  // do pins
+  var pins = [];
+  var unpins = [];
+  for (var i = 0; i < myFilteredArray.length; i++) {
+    if (myFilteredArray[i].isPinned == true) {
+      pins.push(myFilteredArray[i]);
     } else {
-      unpinnedClips.push(filtered[i])
+      unpins.push(myFilteredArray[i]);
     }
   }
-  filtered = pinnedClips.concat(unpinnedClips)
+  
+  // combine
+  myFilteredArray = [];
+  for (var i = 0; i < pins.length; i++) myFilteredArray.push(pins[i]);
+  for (var i = 0; i < unpins.length; i++) myFilteredArray.push(unpins[i]);
 
-  // update heading and clip count text
-  document.getElementById("sectionTitle").textContent = currentFolder
-  document.getElementById("clipCountLabel").textContent = filtered.length + " clips"
+  document.getElementById("sectionTitle").innerHTML = theFolderImIn;
+  document.getElementById("clipCountLabel").innerHTML = myFilteredArray.length + " clips";
 
-  // if no clips found, show empty message
-  if (filtered.length == 0) {
-    grid.innerHTML = ""
-    grid.classList.add("hidden")              // hide the grid
-    emptyState.classList.remove("hidden")      // show empty message
+  if (myFilteredArray.length == 0) {
+    grid.innerHTML = "";
+    grid.classList.add("hidden");
+    emptyState.classList.remove("hidden");
 
-    // different message for search vs no clips
-    if (currentSearch != "") {
-      document.getElementById("emptyMsg").textContent = "No clips match your search"
-      document.getElementById("emptySub").textContent = "Try a different keyword"
+    if (whatImSearching != "") {
+      document.getElementById("emptyMsg").innerHTML = "No clips match your search";
+      document.getElementById("emptySub").innerHTML = "Try a different keyword";
     } else {
-      document.getElementById("emptyMsg").textContent = "No clips here yet"
-      document.getElementById("emptySub").textContent = "Click + New Clip to get started"
+      document.getElementById("emptyMsg").innerHTML = "No clips here yet";
+      document.getElementById("emptySub").innerHTML = "Click + New Clip to get started";
     }
-    return   // stop here
+    return;
   }
 
-  // show grid, hide empty message
-  grid.classList.remove("hidden")
-  emptyState.classList.add("hidden")
-  grid.innerHTML = ""   // clear old cards
+  grid.classList.remove("hidden");
+  emptyState.classList.add("hidden");
+  grid.innerHTML = ""; // clear out old clips
 
-  // make a card for each clip
-  for (var i = 0; i < filtered.length; i++) {
-    var clip = filtered[i]
-
-    var card = document.createElement("div")   // create card div
-    card.className = "clip-card"
-
-    // put the card content inside
-    card.innerHTML = `
-      <div class="clip-card-top">
-        <div class="clip-title">
-          ${clip.isPinned ? '<span style="color:#f0a04b; margin-right:4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -2px;"><path d="M16 11.78L20.25 15.6C20.57 15.89 20.75 16.3 20.75 16.73C20.75 17.56 20.08 18.23 19.25 18.23H13V22.25C13 22.8 12.55 23.25 12 23.25C11.45 23.25 11 22.8 11 22.25V18.23H4.75C3.92 18.23 3.25 17.56 3.25 16.73C3.25 16.3 3.43 15.89 3.75 15.6L8 11.78V5.25H6.25C5.84 5.25 5.5 4.91 5.5 4.5C5.5 4.09 5.84 3.75 6.25 3.75H17.75C18.16 3.75 18.5 4.09 18.5 4.5C18.5 4.91 18.16 5.25 17.75 5.25H16V11.78Z"/></svg></span>' : ''}
-          ${clip.title}
-        </div>
-        <span class="clip-tag">${clip.folder}</span>
-      </div>
-      <div class="clip-preview">${clip.content}</div>
-      <div class="clip-footer">
-        <span class="clip-time">${timeAgo(clip.date)}</span>
-        <div class="clip-actions">
-          ${currentFolder == "Trash" ? `
-            <button class="action-btn" onclick="restoreClip('${clip.id}')" title="Restore">↺ Restore</button>
-            <button class="action-btn danger" onclick="permanentlyDeleteClip('${clip.id}')" title="Permanently Delete">⌫ Delete</button>
-          ` : `
-            <button class="action-btn ${clip.isPinned ? 'pinned' : ''}" onclick="togglePin('${clip.id}')" title="${clip.isPinned ? 'Unpin' : 'Pin'}"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -1px;"><path d="M16 11.78L20.25 15.6C20.57 15.89 20.75 16.3 20.75 16.73C20.75 17.56 20.08 18.23 19.25 18.23H13V22.25C13 22.8 12.55 23.25 12 23.25C11.45 23.25 11 22.8 11 22.25V18.23H4.75C3.92 18.23 3.25 17.56 3.25 16.73C3.25 16.3 3.43 15.89 3.75 15.6L8 11.78V5.25H6.25C5.84 5.25 5.5 4.91 5.5 4.5C5.5 4.09 5.84 3.75 6.25 3.75H17.75C18.16 3.75 18.5 4.09 18.5 4.5C18.5 4.91 18.16 5.25 17.75 5.25H16V11.78Z"/></svg></button>
-            <button class="action-btn" onclick="openMoveMenu('${clip.id}', this)" title="Move">⇄</button>
-            <button class="action-btn" onclick="editClip('${clip.id}')" title="Edit">✎</button>
-            <button class="action-btn" id="copybtn-${clip.id}" onclick="copyClip('${clip.id}')" title="Copy">⎘</button>
-            <button class="action-btn danger" onclick="deleteClip('${clip.id}')" title="Delete">⌫</button>
-          `}
-        </div>
-      </div>
-    `
-
-    grid.appendChild(card)   // add card to grid
+  // draw the cards using strings!
+  for (var i = 0; i < myFilteredArray.length; i++) {
+    var c = myFilteredArray[i];
+    var div = document.createElement("div");
+    div.className = "clip-card";
+    
+    var isT = false;
+    if (theFolderImIn == "Trash") isT = true;
+    
+    var myhtml = "<div class='clip-card-top'><div class='clip-title'>";
+    if (c.isPinned == true) {
+      myhtml = myhtml + "<span style='color:orange;'>PINNED: </span>";
+    }
+    myhtml = myhtml + c.title + "</div><span class='clip-tag'>" + c.folder + "</span></div>";
+    myhtml = myhtml + "<div class='clip-preview'>" + c.content + "</div>";
+    myhtml = myhtml + "<div class='clip-footer'><span class='clip-time'>" + timeAgo(c.date) + "</span><div class='clip-actions'>";
+    
+    if (isT == true) {
+      myhtml = myhtml + "<button class='action-btn' onclick='restoreClip(\"" + c.id + "\")'>Restore</button>";
+      myhtml = myhtml + "<button class='action-btn danger' onclick='permanentlyDeleteClip(\"" + c.id + "\")'>Delete</button>";
+    } else {
+      myhtml = myhtml + "<button class='action-btn' onclick='togglePin(\"" + c.id + "\")'>Pin</button>";
+      myhtml = myhtml + "<button class='action-btn' onclick='openMoveMenu(\"" + c.id + "\", this)'>Move</button>";
+      myhtml = myhtml + "<button class='action-btn' onclick='editClip(\"" + c.id + "\")'>Edit</button>";
+      myhtml = myhtml + "<button class='action-btn' id='copybtn-" + c.id + "' onclick='copyClip(\"" + c.id + "\")'>Copy</button>";
+      myhtml = myhtml + "<button class='action-btn danger' onclick='deleteClip(\"" + c.id + "\")'>Delete</button>";
+    }
+    
+    myhtml = myhtml + "</div></div>";
+    div.innerHTML = myhtml;
+    grid.appendChild(div);
   }
 }
 
-
-// when user changes the sort option
 function changeSort() {
-  currentSort = document.getElementById("sortSelect").value
-  localStorage.setItem("clipnest-sort", currentSort)
-  renderClips()
+  howToSort = document.getElementById("sortSelect").value;
+  localStorage.setItem("clipnest-sort", howToSort);
+  renderClips();
 }
 
-// when user clicks a folder
-function changeFolder(name) {
-  currentFolder = name   // change selected folder
-  renderSidebar()        // redraw sidebar
-  renderClips()          // redraw clips
+function changeFolder(n) {
+  theFolderImIn = n;
+  renderSidebar();
+  renderClips();
 }
 
-
-// when user types in search bar
 function searchClips() {
-  currentSearch = document.getElementById("searchInput").value.toLowerCase()   // get text
-  renderClips()   // redraw clips with filter
+  whatImSearching = document.getElementById("searchInput").value.toLowerCase();
+  renderClips();
 }
 
-
-// open modal to add a new clip
 function openNewModal() {
-  isEditing = false      // not editing
-  editingId = null
+  amIEditing = false;
+  myEditId = null;
 
-  document.getElementById("modalTitle").textContent = "New Clip"     // set title
-  document.getElementById("saveBtn").textContent = "Save Clip"       // set button text
-  document.getElementById("clipTitle").value = ""                    // clear title input
-  document.getElementById("clipContent").value = ""                  // clear content input
+  document.getElementById("modalTitle").innerHTML = "New Clip";
+  document.getElementById("saveBtn").innerHTML = "Save Clip";
+  document.getElementById("clipTitle").value = "";
+  document.getElementById("clipContent").value = "";
 
-  updateFolderDropdown()   // fill folder options
-  updateCounters()         // reset counters
-  document.getElementById("modalOverlay").classList.remove("hidden")  // show modal
+  updateFolderDropdown();
+  updateCounters();
+  document.getElementById("modalOverlay").classList.remove("hidden");
 }
 
+function editClip(myid) {
+  openNewModal();
+  amIEditing = true;
+  myEditId = myid;
 
-// open modal to edit an existing clip
-function editClip(id) {
-  openNewModal()   // open modal first
-
-  isEditing = true   // now in edit mode
-  editingId = id
-
-  // find the clip and fill in its data
-  for (var i = 0; i < clips.length; i++) {
-    if (clips[i].id == id) {
-      document.getElementById("clipTitle").value = clips[i].title      // fill title
-      document.getElementById("clipContent").value = clips[i].content  // fill content
-      document.getElementById("clipFolder").value = clips[i].folder    // fill folder
+  var theclip = null;
+  for (var i = 0; i < allMyClips.length; i++) {
+    if (allMyClips[i].id == myEditId) {
+      theclip = allMyClips[i];
     }
   }
-
-  document.getElementById("modalTitle").textContent = "Edit Clip"     // change heading
-  document.getElementById("saveBtn").textContent = "Update Clip"      // change button
-  updateCounters()   // update counters with new content
-}
-
-
-// close the modal
-function closeModal() {
-  document.getElementById("modalOverlay").classList.add("hidden")   // hide modal
-  isEditing = false
-  editingId = null
-}
-
-
-// save button - works for both new and edit
-function saveClip() {
-  var title = document.getElementById("clipTitle").value       // get title
-  var content = document.getElementById("clipContent").value   // get content
-  var folder = document.getElementById("clipFolder").value     // get folder
-
-  title = title.trim()       // remove spaces from start/end
-  content = content.trim()
-
-  // don't save if empty
-  if (title == "" || content == "") {
-    return
+  if (theclip != null) {
+    document.getElementById("clipTitle").value = theclip.title;
+    document.getElementById("clipContent").value = theclip.content;
+    document.getElementById("clipFolder").value = theclip.folder;
   }
 
-  if (isEditing == true) {
-    // update the existing clip
-    for (var i = 0; i < clips.length; i++) {
-      if (clips[i].id == editingId) {
-        clips[i].title = title
-        clips[i].content = content
-        clips[i].folder = folder
+  document.getElementById("modalTitle").innerHTML = "Edit Clip";
+  document.getElementById("saveBtn").innerHTML = "Update Clip";
+  updateCounters();
+}
+
+function closeModal() {
+  document.getElementById("modalOverlay").classList.add("hidden");
+  amIEditing = false;
+  myEditId = null;
+}
+
+function saveClip() {
+  var t = document.getElementById("clipTitle").value;
+  var c = document.getElementById("clipContent").value;
+  var f = document.getElementById("clipFolder").value;
+
+  if (t == "" || c == "") {
+    return; // do nothing
+  }
+
+  if (amIEditing == true) {
+    for (var i = 0; i < allMyClips.length; i++) {
+      if (allMyClips[i].id == myEditId) {
+        allMyClips[i].title = t;
+        allMyClips[i].content = c;
+        allMyClips[i].folder = f;
       }
     }
   } else {
-    // make a new clip
-    var newClip = {
-      id: nextId,
-      title: title,
-      content: content,
-      folder: folder,
+    var newObj = {
+      id: nextClipId,
+      title: t,
+      content: c,
+      folder: f,
       isPinned: false,
-      date: Date.now()   // current time
+      date: Date.now()
+    };
+    nextClipId = nextClipId + 1;
+    
+    // add to front manually
+    var tempArr = [newObj];
+    for (var i = 0; i < allMyClips.length; i++) {
+      tempArr.push(allMyClips[i]);
     }
-    nextId = nextId + 1        // increase id for next time
-    clips.unshift(newClip)     // add to start of array
+    allMyClips = tempArr;
   }
 
-  // save to localStorage so it stays after refresh
-  localStorage.setItem("clipnest-clips", JSON.stringify(clips))
-  localStorage.setItem("clipnest-folders", JSON.stringify(folders))
+  localStorage.setItem("clipnest-clips", JSON.stringify(allMyClips));
+  localStorage.setItem("clipnest-folders", JSON.stringify(myFolders));
 
-  closeModal()       // close the modal
-  renderSidebar()    // redraw sidebar
-  renderClips()      // redraw clips
+  closeModal();
+  renderSidebar();
+  renderClips();
 }
 
-
-// update character and word counters
 function updateCounters() {
-  var text = document.getElementById("clipContent").value
-  var charCount = text.length
-  var wordCount = text.trim() === "" ? 0 : text.trim().split(/\s+/).length
-  document.getElementById("counterLabel").textContent = wordCount + " words | " + charCount + " characters"
+  var myText = document.getElementById("clipContent").value;
+  var chars = myText.length;
+  
+  // count words 
+  var words = 0;
+  if (myText != "") {
+    var splitted = myText.split(" ");
+    for(var i = 0; i < splitted.length; i++) {
+      if (splitted[i] != "") {
+        words = words + 1;
+      }
+    }
+  }
+  document.getElementById("counterLabel").innerHTML = words + " words | " + chars + " characters";
 }
 
-
-// delete a clip (move to trash)
 function deleteClip(id) {
-  var newClips = []
-  for (var i = 0; i < clips.length; i++) {
-    if (clips[i].id != id) {
-      newClips.push(clips[i])
+  var newAll = [];
+  for (var i = 0; i < allMyClips.length; i++) {
+    if (allMyClips[i].id == id) {
+      var d = [];
+      d.push(allMyClips[i]);
+      for(var x = 0; x < theDeletedOnes.length; x++) {
+        d.push(theDeletedOnes[x]);
+      }
+      theDeletedOnes = d;
     } else {
-      // move to deletedClips array
-      deletedClips.unshift(clips[i])
+      newAll.push(allMyClips[i]);
     }
   }
-  clips = newClips
+  allMyClips = newAll;
 
-  localStorage.setItem("clipnest-clips", JSON.stringify(clips))
-  localStorage.setItem("clipnest-deleted", JSON.stringify(deletedClips))
-
-  renderSidebar()
-  renderClips()
+  localStorage.setItem("clipnest-clips", JSON.stringify(allMyClips));
+  localStorage.setItem("clipnest-deleted", JSON.stringify(theDeletedOnes));
+  renderSidebar();
+  renderClips();
 }
 
-// permanently delete a clip from trash
 function permanentlyDeleteClip(id) {
-  var newDeleted = []
-  for (var i = 0; i < deletedClips.length; i++) {
-    if (deletedClips[i].id != id) {
-      newDeleted.push(deletedClips[i])
+  var d = [];
+  for (var i = 0; i < theDeletedOnes.length; i++) {
+    if (theDeletedOnes[i].id != id) {
+      d.push(theDeletedOnes[i]);
     }
   }
-  deletedClips = newDeleted
+  theDeletedOnes = d;
 
-  localStorage.setItem("clipnest-deleted", JSON.stringify(deletedClips))
-
-  renderSidebar()
-  renderClips()
+  localStorage.setItem("clipnest-deleted", JSON.stringify(theDeletedOnes));
+  renderSidebar();
+  renderClips();
 }
 
-// restore a clip from trash
 function restoreClip(id) {
-  var newDeleted = []
-  for (var i = 0; i < deletedClips.length; i++) {
-    if (deletedClips[i].id != id) {
-      newDeleted.push(deletedClips[i])
+  var d = [];
+  for (var i = 0; i < theDeletedOnes.length; i++) {
+    if (theDeletedOnes[i].id == id) {
+      var a = [];
+      a.push(theDeletedOnes[i]);
+      for (var y = 0; y < allMyClips.length; y++) {
+        a.push(allMyClips[y]);
+      }
+      allMyClips = a;
     } else {
-      clips.unshift(deletedClips[i])
+      d.push(theDeletedOnes[i]);
     }
   }
-  deletedClips = newDeleted
+  theDeletedOnes = d;
 
-  localStorage.setItem("clipnest-clips", JSON.stringify(clips))
-  localStorage.setItem("clipnest-deleted", JSON.stringify(deletedClips))
-
-  renderSidebar()
-  renderClips()
+  localStorage.setItem("clipnest-clips", JSON.stringify(allMyClips));
+  localStorage.setItem("clipnest-deleted", JSON.stringify(theDeletedOnes));
+  renderSidebar();
+  renderClips();
 }
 
-
-// toggle pin status
 function togglePin(id) {
-  for (var i = 0; i < clips.length; i++) {
-    if (clips[i].id == id) {
-      clips[i].isPinned = !clips[i].isPinned
+  for (var i = 0; i < allMyClips.length; i++) {
+    if (allMyClips[i].id == id) {
+      if (allMyClips[i].isPinned == true) {
+        allMyClips[i].isPinned = false;
+      } else {
+        allMyClips[i].isPinned = true;
+      }
     }
   }
-
-  // save to localStorage
-  localStorage.setItem("clipnest-clips", JSON.stringify(clips))
-  renderClips()
+  localStorage.setItem("clipnest-clips", JSON.stringify(allMyClips));
+  renderClips();
 }
 
-
-// copy clip text to clipboard
 function copyClip(id) {
-  var clip = null
-
-  // find the clip
-  for (var i = 0; i < clips.length; i++) {
-    if (clips[i].id == id) {
-      clip = clips[i]
+  var c = null;
+  for (var i = 0; i < allMyClips.length; i++) {
+    if (allMyClips[i].id == id) {
+      c = allMyClips[i];
     }
   }
 
-  if (clip == null) return   // if not found, stop
+  if (c != null) {
+    navigator.clipboard.writeText(c.content);
+    var b = document.getElementById("copybtn-" + id);
+    b.innerHTML = "Copied!";
+    b.style.color = "green";
 
-  navigator.clipboard.writeText(clip.content)   // copy to clipboard
-
-  // change button to checkmark
-  var btn = document.getElementById("copybtn-" + id)
-  btn.textContent = "✓"
-  btn.classList.add("success")       // make it green
-
-  // change back after 1.5 seconds
-  setTimeout(function () {
-    btn.textContent = "⎘"
-    btn.classList.remove("success")
-  }, 1500)
+    setTimeout(function() {
+      b.innerHTML = "Copy";
+      b.style.color = "";
+    }, 1500);
+  }
 }
 
-
-// open the move menu (pick which folder to move to)
-function openMoveMenu(id, btn) {
-  var menu = document.getElementById("moveMenu")
-
-  // if same menu is already open, close it
-  if (moveMenuOpenFor == id) {
-    menu.classList.add("hidden")
-    moveMenuOpenFor = null
-    return
+function openMoveMenu(id, myBtn) {
+  var m = document.getElementById("moveMenu");
+  
+  if (myMoveMenuOpen == id) {
+    m.classList.add("hidden");
+    myMoveMenuOpen = null;
+    return;
   }
 
-  moveMenuOpenFor = id
+  myMoveMenuOpen = id;
+  var c = null;
+  for (var i = 0; i < allMyClips.length; i++) {
+    if (allMyClips[i].id == id) c = allMyClips[i];
+  }
 
-  // find the clip
-  var clip = null
-  for (var i = 0; i < clips.length; i++) {
-    if (clips[i].id == id) {
-      clip = clips[i]
+  if (c == null) return;
+
+  m.innerHTML = ""; // clear old menu
+
+  var countFold = 0;
+  for (var i = 0; i < myFolders.length; i++) {
+    if (myFolders[i] != c.folder) {
+      var it = document.createElement("div");
+      it.className = "move-menu-item";
+      it.innerHTML = myFolders[i];
+      it.setAttribute("onclick", "moveClip(\"" + id + "\", \"" + myFolders[i] + "\")");
+      m.appendChild(it);
+      countFold++;
     }
   }
 
-  menu.innerHTML = ""   // clear old items
-
-  // add all folders except the one clip is already in
-  for (var i = 0; i < folders.length; i++) {
-    if (folders[i] != clip.folder) {
-      var item = document.createElement("div")
-      item.className = "move-menu-item"
-      item.textContent = folders[i]
-      item.setAttribute("onclick", "moveClip('" + id + "', '" + folders[i] + "')")
-      menu.appendChild(item)
-    }
+  if (countFold == 0) {
+    var it = document.createElement("div");
+    it.className = "move-menu-item";
+    it.innerHTML = "No other folders";
+    m.appendChild(it);
   }
 
-  // if no other folders exist
-  if (menu.innerHTML == "") {
-    var item = document.createElement("div")
-    item.className = "move-menu-item"
-    item.textContent = "No other folders"
-    item.style.color = "#555"
-    menu.appendChild(item)
-  }
-
-  // put menu below the button
-  var rect = btn.getBoundingClientRect()   // get button position
-  menu.style.top = (rect.bottom + 6) + "px"
-  menu.style.left = (rect.right - 160) + "px"
-  menu.classList.remove("hidden")   // show menu
+  var r = myBtn.getBoundingClientRect();
+  m.style.top = (r.bottom + 6) + "px";
+  m.style.left = (r.right - 160) + "px";
+  m.classList.remove("hidden");
 }
 
+function moveClip(id, fol) {
+  for (var i = 0; i < allMyClips.length; i++) {
+    if (allMyClips[i].id == id) {
+      allMyClips[i].folder = fol;
+    }
+  }
+  localStorage.setItem("clipnest-clips", JSON.stringify(allMyClips));
+  localStorage.setItem("clipnest-folders", JSON.stringify(myFolders));
 
-// move clip to another folder
-function moveClip(id, targetFolder) {
-  // find clip and change its folder
-  for (var i = 0; i < clips.length; i++) {
-    if (clips[i].id == id) {
-      clips[i].folder = targetFolder
+  document.getElementById("moveMenu").classList.add("hidden");
+  myMoveMenuOpen = null;
+  
+  renderSidebar();
+  renderClips();
+}
+
+document.addEventListener("click", function(e) {
+  var m = document.getElementById("moveMenu");
+  var o = e.target.getAttribute("onclick");
+  var cl = false;
+  if (o != null) {
+    if (o.includes("openMoveMenu")) {
+      cl = true;
     }
   }
 
-  // save to localStorage
-  localStorage.setItem("clipnest-clips", JSON.stringify(clips))
-  localStorage.setItem("clipnest-folders", JSON.stringify(folders))
-
-  document.getElementById("moveMenu").classList.add("hidden")   // hide menu
-  moveMenuOpenFor = null
-  renderSidebar()
-  renderClips()
-}
-
-
-// close move menu if clicking outside
-document.addEventListener("click", function (e) {
-  var menu = document.getElementById("moveMenu")
-  var onclickVal = e.target.getAttribute("onclick")
-  var clickedMoveBtn = onclickVal && onclickVal.includes("openMoveMenu")
-
-  // if click is not on menu and not on move button, close it
-  if (!menu.contains(e.target) && !clickedMoveBtn) {
-    menu.classList.add("hidden")
-    moveMenuOpenFor = null
+  if (m.contains(e.target) == false && cl == false) {
+    m.classList.add("hidden");
+    myMoveMenuOpen = null;
   }
-})
+});
 
-
-// show folder name input
 function showFolderInput() {
-  document.getElementById("addFolderBtn").classList.add("hidden")        // hide button
-  document.getElementById("folderInputBox").classList.remove("hidden")   // show input
-  document.getElementById("folderNameInput").focus()                     // put cursor in input
+  document.getElementById("addFolderBtn").classList.add("hidden");
+  document.getElementById("folderInputBox").classList.remove("hidden");
+  document.getElementById("folderNameInput").focus();
 }
 
-// hide folder name input
 function hideFolderInput() {
-  document.getElementById("addFolderBtn").classList.remove("hidden")     // show button
-  document.getElementById("folderInputBox").classList.add("hidden")      // hide input
-  document.getElementById("folderNameInput").value = ""                  // clear input
+  document.getElementById("addFolderBtn").classList.remove("hidden");
+  document.getElementById("folderInputBox").classList.add("hidden");
+  document.getElementById("folderNameInput").value = "";
 }
 
-// add a new folder
 function addNewFolder() {
-  var name = document.getElementById("folderNameInput").value.trim()   // get name
+  var n = document.getElementById("folderNameInput").value;
+  if (n == "") return;
 
-  if (name == "") {
-    return
+  var exists = false;
+  for(var i = 0; i < myFolders.length; i++) {
+    if (myFolders[i] == n) exists = true;
   }
+  if (exists == true) return;
 
-  // check if folder name already taken
-  var alreadyExists = false
-  for (var i = 0; i < folders.length; i++) {
-    if (folders[i] == name) {
-      alreadyExists = true
-    }
-  }
+  myFolders.push(n);
 
-  if (alreadyExists) {
-    return
-  }
+  localStorage.setItem("clipnest-clips", JSON.stringify(allMyClips));
+  localStorage.setItem("clipnest-folders", JSON.stringify(myFolders));
 
-  folders.push(name)   // add to list
-
-  // save to localStorage
-  localStorage.setItem("clipnest-clips", JSON.stringify(clips))
-  localStorage.setItem("clipnest-folders", JSON.stringify(folders))
-
-  hideFolderInput()
-  renderSidebar()
-  updateFolderDropdown()
+  hideFolderInput();
+  renderSidebar();
+  updateFolderDropdown();
 }
 
-
-// fill folder options in the modal dropdown
 function updateFolderDropdown() {
-  var select = document.getElementById("clipFolder")
-  select.innerHTML = ""   // clear old options
-
-  // add each folder as an option
-  for (var i = 0; i < folders.length; i++) {
-    var option = document.createElement("option")
-    option.value = folders[i]
-    option.textContent = folders[i]
-    select.appendChild(option)
+  var s = document.getElementById("clipFolder");
+  s.innerHTML = "";
+  for (var i = 0; i < myFolders.length; i++) {
+    var o = document.createElement("option");
+    o.value = myFolders[i];
+    o.innerHTML = myFolders[i];
+    s.appendChild(o);
   }
 }
 
-
-// close modal when clicking the dark area behind it
-document.getElementById("modalOverlay").addEventListener("click", function (e) {
+document.getElementById("modalOverlay").addEventListener("click", function(e) {
   if (e.target == document.getElementById("modalOverlay")) {
-    closeModal()
+    closeModal();
   }
-})
+});
 
-// keyboard shortcuts for folder input
-document.getElementById("folderNameInput").addEventListener("keydown", function (e) {
-  if (e.key == "Enter") {     // press enter to add
-    addNewFolder()
+document.getElementById("folderNameInput").addEventListener("keydown", function(e) {
+  if (e.key == "Enter") {
+    addNewFolder();
+  } else if (e.key == "Escape") {
+    hideFolderInput();
   }
-  if (e.key == "Escape") {    // press escape to cancel
-    hideFolderInput()
-  }
-})
+});
 
-
-// start the app
 if (document.getElementById("sortSelect")) {
-  document.getElementById("sortSelect").value = currentSort
+  document.getElementById("sortSelect").value = howToSort;
 }
-renderSidebar()
-renderClips()
-updateFolderDropdown()
+renderSidebar();
+renderClips();
+updateFolderDropdown();

@@ -12,11 +12,8 @@
 **Your personal clipboard, organized.**  
 Store anything you copy repeatedly — one tap away, always.
 
-[![Made with Expo](https://img.shields.io/badge/Made%20with-Expo-000020?style=flat-square&logo=expo)](https://expo.dev)
-[![Firebase](https://img.shields.io/badge/Backend-Firebase-FFCA28?style=flat-square&logo=firebase&logoColor=black)](https://firebase.google.com)
-[![Platform](https://img.shields.io/badge/Platform-iOS%20%7C%20Android%20%7C%20Web-blue?style=flat-square)](https://expo.dev)
-[![Auth](https://img.shields.io/badge/Auth-Enabled-success?style=flat-square)]()
-[![Offline](https://img.shields.io/badge/Offline-Ready-brightgreen?style=flat-square)]()
+[![Platform](https://img.shields.io/badge/Platform-Web-blue?style=flat-square)]()
+[![Storage](https://img.shields.io/badge/Storage-Local%20Storage-brightgreen?style=flat-square)]()
 
 </div>
 
@@ -36,13 +33,12 @@ No friction. No searching. Just tap and move on.
 
 - **One-tap copy** — Every item copies to clipboard instantly, no extra steps
 - **Search** — Find any clip across all categories instantly
-- **Categories** — Group your clips however you think: by project, type, context, or anything else
-- **Universal content** — Links, code snippets, prompts, social IDs, research papers, repo URLs, anything text-based
-- **Offline support** — Your clips are available even without internet; syncs automatically when back online
+- **Folders** — Group your clips however you think: by project, type, context, or anything else
+- **Pinning** — Pin your most used clips to the top for even faster access
+- **Trash & Restore** — Accidental deletion? Retrieve your clips from the Recycle Bin
+- **Word/Character Count** — See exactly how long your clips are
+- **Local Storage** — Fast, offline, and private. All data is saved securely in your browser's local storage
 - **Sleek UI** — Clean, focused interface designed to stay out of your way
-- **Authentication** — Your clips are yours; secure login keeps data private
-- **Cloud sync via Firebase** — Access your clips from any device, always up to date
-- **Cross-platform** — iOS, Android, and Web from a single codebase (Expo)
 
 ---
 
@@ -65,11 +61,8 @@ No friction. No searching. Just tap and move on.
 
 | Layer | Technology |
 |---|---|
-| Framework | [Expo](https://expo.dev) (React Native) |
-| Backend & Database | [Firebase](https://firebase.google.com) (Firestore) |
-| Authentication | Firebase Auth |
-| Offline Storage | Firestore offline persistence |
-| Platform Support | iOS · Android · Web |
+| Frontend | HTML5, CSS3, Vanilla JavaScript |
+| Data Storage | Browser `localStorage` |
 
 ---
 
@@ -77,22 +70,10 @@ No friction. No searching. Just tap and move on.
 
 ```
 ClipNest/
-├── src/                        # All application source code
-│   ├── screens/                # App screens (Home, Login, Category, etc.)
-│   ├── components/             # Reusable UI components (ClipCard, SearchBar, etc.)
-│   ├── firebase/               # Firebase config, auth helpers, Firestore queries
-│   ├── hooks/                  # Custom React hooks (useClips, useAuth, etc.)
-│   └── constants/              # Theme colors, layout constants
-│
-├── ClipNestApp.js              # Root app component
-├── app.js                      # App entry with navigation setup
-├── index.js                    # Expo entry point
-├── index.html                  # Web entry point (Expo web)
-├── style.css                   # Global styles (web)
-├── app.json                    # Expo app configuration
-├── babel.config.js             # Babel configuration
-├── package.json                # Dependencies and scripts
-└── package-lock.json
+├── index.html                  # Main application UI
+├── style.css                   # Stylesheet for layout and theming
+├── app.js                      # Application logic and local storage management
+└── LICENSE                     # MIT License
 ```
 
 ---
@@ -101,71 +82,17 @@ ClipNest/
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org) (v18 or higher)
-- [Expo CLI](https://docs.expo.dev/get-started/installation/)
-- A Firebase project with Firestore and Authentication enabled
+All you need is a modern web browser!
 
-### Installation
+### Installation & Usage
 
-```bash
-# Clone the repository
-git clone https://github.com/Aryaan147/ClipNest.git
-cd ClipNest
-
-# Install dependencies
-npm install
-
-# Start the development server
-npx expo start
-```
-
-### Firebase Setup
-
-1. Create a project at [Firebase Console](https://console.firebase.google.com)
-2. Enable **Firestore Database** and **Authentication** (Email/Password or your preferred provider)
-3. In Firestore settings, enable **offline persistence** for offline support
-4. Copy your Firebase config and create a `.env` file in the root:
-
-```env
-EXPO_PUBLIC_FIREBASE_API_KEY=your_api_key
-EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-EXPO_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-EXPO_PUBLIC_FIREBASE_APP_ID=your_app_id
-```
-
-5. Run the app:
-
-```bash
-# Start development server
-npx expo start
-
-# iOS
-npx expo run:ios
-
-# Android
-npx expo run:android
-
-# Web
-npx expo start --web
-```
-
----
-
-## 🗺 Roadmap
-
-- [x] One-tap copy
-- [x] Categories
-- [x] Search across all clips
-- [x] Offline support
-- [x] Firebase cloud sync
-- [x] Authentication
-- [ ] Tags / multi-category support
-- [ ] Import from browser bookmarks
-- [ ] Share clips with other users
-- [ ] Usage stats (most copied items)
-- [ ] Widgets (iOS/Android home screen quick-copy)
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Aryaan147/ClipNest.git
+   cd ClipNest
+   ```
+2. **Open the app:**
+   Simply open `index.html` in any modern web browser. You can do this by double-clicking the file in your file explorer, or dragging it into your browser window. No server or build steps required!
 
 ---
 

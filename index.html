@@ -1,140 +1,116 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ClipNest</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' font-weight='900' fill='%23f0a04b'>⌗</text></svg>">
-  <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <title>My First Clipnest Project</title>
+  <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 <body>
 
-  <!-- top bar -->
-  <div class="header">
-    <div class="header-logo">
-      <span class="logo-icon">⌗</span>
-      <span class="logo-text">ClipNest</span>
-      <span class="logo-version">v1.0</span>
+  <!-- top menu -->
+  <div class="myheader" id="topHeader">
+    <div style="float: left;">
+      <h1 style="color: orange; display: inline;"># ClipNest</h1>
+      <span style="font-size: 10px;">v1</span>
     </div>
-    <button class="primary-btn" onclick="openNewModal()">+ New Clip</button>
+    <div style="float: right;">
+      <button onclick="openNewModal()" style="background-color: orange; border: none; padding: 10px; cursor: pointer;">Add New Clip</button>
+    </div>
+    <div style="clear: both;"></div>
   </div>
 
-  <!-- main layout: sidebar + content -->
-  <div class="app-body">
-
-    <!-- left sidebar -->
-    <div class="sidebar">
-
-      <p class="sidebar-section-label">LIBRARY</p>
-
-      <div class="sidebar-folder active" onclick="changeFolder('All')">
-        <span>All Clips</span>
-        <span class="folder-count" id="count-All">0</span>
+  <div id="wrapper">
+    
+    <!-- sidebar area -->
+    <div class="mysidebar">
+      <b>MY LIBRARY</b><br><br>
+      
+      <div onclick="changeFolder('All')" class="folder" style="cursor: pointer; padding: 5px;">
+        All Clips (<span id="count-All">0</span>)
       </div>
 
-      <p class="sidebar-section-label" style="margin-top: 16px;">FOLDERS</p>
-
-      <!-- folders will be added here by js -->
+      <br><b>FOLDERS</b><br><br>
       <div id="folderList"></div>
+      <br>
 
-      <!-- add new folder button -->
-      <div class="add-folder-btn" id="addFolderBtn" onclick="showFolderInput()">+ New Folder</div>
+      <button id="addFolderBtn" onclick="showFolderInput()" style="cursor: pointer;">Create New Folder</button>
 
-      <!-- input box to type new folder name (hidden by default) -->
-      <div class="folder-input-box hidden" id="folderInputBox">
-        <input type="text" id="folderNameInput" placeholder="Folder name..." />
-        <div class="folder-input-actions">
-          <button class="primary-btn small" onclick="addNewFolder()">Add</button>
-          <button class="ghost-btn small" onclick="hideFolderInput()">Cancel</button>
-        </div>
+      <div id="folderInputBox" class="hidden">
+        <input type="text" id="folderNameInput" placeholder="name here..." />
+        <br><br>
+        <button onclick="addNewFolder()">Save</button>
+        <button onclick="hideFolderInput()">X</button>
       </div>
 
-      <div style="margin-top: auto; padding-top: 24px;">
-        <p class="sidebar-section-label">TRASH</p>
-        <div class="sidebar-folder" onclick="changeFolder('Trash')">
-          <span>Recycle Bin</span>
-          <span class="folder-count" id="count-Trash">0</span>
-        </div>
+      <br><br><br>
+      <b>TRASH</b><br>
+      <div class="folder" onclick="changeFolder('Trash')" style="cursor: pointer; padding: 5px;">
+        Recycle Bin (<span id="count-Trash">0</span>)
+      </div>
+    </div>
+
+    <!-- main stuff -->
+    <div class="mymain">
+
+      <center>
+        <input type="text" id="searchInput" placeholder="Search my clips..." onkeyup="searchClips()" style="width: 50%; padding: 10px;" />
+      </center>
+      <br>
+
+      <div style="border-bottom: 2px solid grey; padding-bottom: 10px; margin-bottom: 20px;">
+        <h2 id="sectionTitle" style="display: inline;">All Clips</h2>
+        <span id="clipCountLabel" style="color: gray;">0 clips</span>
+        
+        <select id="sortSelect" onchange="changeSort()" style="float: right;">
+          <option value="Newest">New</option>
+          <option value="Oldest">Old</option>
+          <option value="A-Z">A to Z</option>
+        </select>
+        <div style="clear: both;"></div>
+      </div>
+
+      <div id="clipsGrid"></div>
+      <div style="clear: both;"></div>
+
+      <!-- empty message -->
+      <div id="emptyState" class="hidden" style="text-align: center; margin-top: 50px;">
+        <h1 style="color: gray;">No clips found!!!</h1>
+        <p id="emptyMsg">It is empty.</p>
+        <p id="emptySub">You should add something.</p>
       </div>
 
     </div>
+    <div style="clear: both;"></div>
+  </div>
 
-    <!-- right content area -->
-    <div class="main">
+  <!-- popup -->
+  <div id="modalOverlay" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100;">
+    <div style="background: #222; width: 500px; margin: 100px auto; padding: 20px; color: white;">
+      
+      <h2 id="modalTitle">New Clip</h2>
+      <hr>
+      <br>
 
-      <!-- search bar -->
-      <div class="search-wrap">
-        <span class="search-icon">⌕</span>
-        <input type="text" class="search-input" id="searchInput" placeholder="Search clips..." oninput="searchClips()" />
-      </div>
+      <p>TITLE:</p>
+      <input type="text" id="clipTitle" style="width: 100%;" />
+      <br><br>
 
-      <!-- heading -->
-      <div class="section-header">
-        <div class="section-header-left">
-          <h2 class="section-title" id="sectionTitle">All Clips</h2>
-          <span class="clip-count-label" id="clipCountLabel">0 clips</span>
-        </div>
-        <div class="section-header-right">
-          <select class="sort-select" id="sortSelect" onchange="changeSort()">
-            <option value="Newest">Newest First</option>
-            <option value="Oldest">Oldest First</option>
-            <option value="A-Z">Alphabetical (A-Z)</option>
-          </select>
-        </div>
-      </div>
+      <p>CONTENT:</p>
+      <textarea id="clipContent" style="width: 100%; height: 100px;" onkeyup="updateCounters()"></textarea>
+      <br>
+      <span id="counterLabel" style="font-size: 12px; color: gray;">0 words</span>
+      <br><br>
 
-      <!-- cards will go here -->
-      <div class="clips-grid" id="clipsGrid"></div>
+      <p>FOLDER:</p>
+      <select id="clipFolder" style="width: 100%;"></select>
+      <br><br><br>
 
-      <!-- shown when no clips found -->
-      <div class="empty-state hidden" id="emptyState">
-        <div class="empty-glyph">⌗</div>
-        <p class="empty-msg" id="emptyMsg">No clips here yet</p>
-        <p class="empty-sub" id="emptySub">Click "+ New Clip" to get started</p>
-      </div>
+      <button onclick="saveClip()" id="saveBtn" style="background: orange; border: none; padding: 10px;">Save It</button>
+      <button onclick="closeModal()" style="padding: 10px;">Cancel</button>
 
     </div>
   </div>
 
-
-  <!-- popup modal for adding / editing a clip -->
-  <div class="modal-overlay hidden" id="modalOverlay">
-    <div class="modal">
-
-      <div class="modal-header">
-        <h3 class="modal-title" id="modalTitle">New Clip</h3>
-        <button class="action-btn" onclick="closeModal()">✕</button>
-      </div>
-
-      <div class="modal-body">
-        <div class="form-group">
-          <label class="form-label">TITLE</label>
-          <input type="text" id="clipTitle" placeholder="Give this clip a name..." />
-        </div>
-        <div class="form-group">
-          <label class="form-label">CONTENT</label>
-          <textarea id="clipContent" placeholder="Paste or type your content here..." oninput="updateCounters()"></textarea>
-          <div id="counterLabel" class="counter-label">0 words | 0 characters</div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">FOLDER</label>
-          <select id="clipFolder"></select>
-        </div>
-        <div class="modal-actions">
-          <button class="ghost-btn" onclick="closeModal()">Cancel</button>
-          <button class="primary-btn" id="saveBtn" onclick="saveClip()">Save Clip</button>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-
-  <!-- small floating menu for moving a clip to another folder -->
-  <div class="move-menu hidden" id="moveMenu"></div>
-
-
+  <div id="moveMenu" class="hidden" style="position: absolute; background: black; border: 1px solid white; padding: 10px;"></div>
 
   <script src="app.js"></script>
 </body>
